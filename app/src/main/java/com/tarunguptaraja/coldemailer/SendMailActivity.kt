@@ -71,9 +71,9 @@ class SendMailActivity : AppCompatActivity() {
 
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "application/pdf"
-            putExtra(Intent.EXTRA_EMAIL, binding.etEmail.text.toString().split(" ").toTypedArray())
+            putExtra(Intent.EXTRA_EMAIL, binding.etEmail.text.toString().split(";").toTypedArray())
+            putExtra(Intent.EXTRA_SUBJECT, profileData.subject)
             putExtra(Intent.EXTRA_TEXT, profileData.subject)
-            putExtra(Intent.EXTRA_SUBJECT, profileData.body)
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             setPackage("com.google.android.gm")
