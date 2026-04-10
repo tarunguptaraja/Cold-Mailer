@@ -14,6 +14,7 @@ import java.io.File
 class SendMailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySendEmailBinding
+    private val dbHelper by lazy { DatabaseHelper(this) }
     private val profilePrefs: ProfilePreferenceManager by lazy { ProfilePreferenceManager(this) }
     private val profileData by lazy {
         profilePrefs.getProfile()
@@ -48,6 +49,11 @@ class SendMailActivity : AppCompatActivity() {
             }
         }
 
+        binding.btnHistory.setOnClickListener {
+            val intent = Intent(this, HistoryActivity::class.java)
+            startActivity(intent)
+        }
+
         binding.btnProfile.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
@@ -77,6 +83,14 @@ class SendMailActivity : AppCompatActivity() {
             putExtra(Intent.EXTRA_TEXT, profileData.body)
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        
+        // Save to DB
+        val dateSent = System.currentTimeMillis()
+        val emailText = binding.etEmail.text.toString()
+        val emailsList = emailText.split(Regex("[,;]")).map { it.trim() }.filter { it.isNotEmpty() }
+        emailsList.forEach {
+            dbHelper.addHistory(it, profileData.subject, dateSent)
         }
         
         try {
