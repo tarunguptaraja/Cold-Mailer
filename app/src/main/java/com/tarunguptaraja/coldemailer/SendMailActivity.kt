@@ -31,9 +31,8 @@ class SendMailActivity : AppCompatActivity() {
         }
 
         binding.sendEmail.setOnClickListener {
-            if (binding.etEmail.text.toString().isEmpty() && !binding.etEmail.text.toString()
-                    .contains("@")
-            ) {
+            val emailText = binding.etEmail.text.toString()
+            if (emailText.isEmpty() || !emailText.contains("@")) {
                 Toast.makeText(this, "Invalid Email", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -71,13 +70,21 @@ class SendMailActivity : AppCompatActivity() {
 
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "application/pdf"
-            putExtra(Intent.EXTRA_EMAIL, binding.etEmail.text.toString().split(";").toTypedArray())
+            val emailText = binding.etEmail.text.toString()
+            val emails = emailText.split(Regex("[,;]")).map { it.trim() }.filter { it.isNotEmpty() }.toTypedArray()
+            putExtra(Intent.EXTRA_EMAIL, emails)
             putExtra(Intent.EXTRA_SUBJECT, profileData.subject)
             putExtra(Intent.EXTRA_TEXT, profileData.body)
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            setPackage("com.google.android.gm")
         }
-        startActivity(Intent.createChooser(intent, "Send Email"))
+        
+        try {
+            val gmailIntent = Intent(intent)
+            gmailIntent.setPackage("com.google.android.gm")
+            startActivity(gmailIntent)
+        } catch (e: android.content.ActivityNotFoundException) {
+            startActivity(Intent.createChooser(intent, "Send Email"))
+        }
     }
 }
