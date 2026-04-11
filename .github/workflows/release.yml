@@ -1,0 +1,127 @@
+name: Manual Android Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Choose update type'
+        required: true
+        default: 'minor'
+        type: choice
+        options:
+          - major # 1.0.0 -> 2.0.0
+          - patch # 1.0.0 -> 1.1.0 (As per user request)
+          - minor # 1.0.0 -> 1.0.1 (As per user request)
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build & Release Signed APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required to see all tags
+
+      - name: Calculate New Version
+        id: versioning
+        run: |
+          # Get the latest version tag or start with v1.0.0
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          echo "Current Tag: $LATEST_TAG"
+          
+          # Remove 'v' prefix
+          VERSION=${LATEST_TAG#v}
+          
+          # Split into parts
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          
+          # Increment based on selection
+          if [ "${{ github.event.inputs.version_type }}" == "major" ]; then
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+          elif [ "${{ github.event.inputs.version_type }}" == "patch" ]; then
+            MINOR=$((MINOR + 1))
+            PATCH=0
+          elif [ "${{ github.event.inputs.version_type }}" == "minor" ]; then
+            PATCH=$((PATCH + 1))
+          fi
+          
+          NEW_TAG="v$MAJOR.$MINOR.$PATCH"
+          # Use commit count as Version Code
+          VERSION_CODE=$(git rev-list --count HEAD)
+          
+          echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+          echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
+          echo "Proceeding with $NEW_TAG ($VERSION_CODE)"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Create local.properties
+        run: |
+          echo "GEMINI_API_KEY=\"${{ secrets.GEMINI_API_KEY }}\"" > local.properties
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build & Sign Release APK
+        run: ./gradlew assembleRelease -PversionName=${{ steps.versioning.outputs.new_tag }} -PversionCode=${{ steps.versioning.outputs.version_code }}
+        env:
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+
+      - name: Rename APK
+        run: mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/cold-emailer.apk
+
+      - name: Create & Push Tag
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag ${{ steps.versioning.outputs.new_tag }}
+          git push origin ${{ steps.versioning.outputs.new_tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.versioning.outputs.new_tag }}
+          name: Release ${{ steps.versioning.outputs.new_tag }}
+          draft: false
+          prerelease: false
+          files: |
+            app/build/outputs/apk/release/cold-emailer.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send Notification Email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.MAIL_SERVER }}
+          server_port: ${{ secrets.MAIL_PORT }}
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "🚀 ColdEmailer Released: ${{ steps.versioning.outputs.new_tag }}"
+          to: ${{ secrets.USER_EMAIL }}
+          from: "ColdEmailer Build Bot"
+          body: |
+            The new build for ColdEmailer is now live!
+            
+            Version: ${{ steps.versioning.outputs.new_tag }}
+            Version Code: ${{ steps.versioning.outputs.version_code }}
+            
+            You can download the APK (cold-emailer.apk) directly from the GitHub Release page:
+            https://github.com/${{ github.repository }}/releases/tag/${{ steps.versioning.outputs.new_tag }}
+            
+            Happy Cold Emailing!
