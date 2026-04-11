@@ -1,7 +1,6 @@
 package com.tarunguptaraja.coldemailer
 
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
@@ -67,7 +66,7 @@ class SendMailActivity : AppCompatActivity() {
                 Toast.makeText(this, "Invalid Email", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            
+
             val state = viewModel.uiState.value
             state.profile?.let {
                 val pdfFile = getLatestPdf(it)
@@ -104,13 +103,16 @@ class SendMailActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
-                    binding.btnAnalyze.text = if (state.isAnalyzing) "Analyzing..." else "Analyze with AI"
+                    binding.btnAnalyze.text =
+                        if (state.isAnalyzing) "Analyzing..." else "Analyze with AI"
                     binding.btnAnalyze.isEnabled = !state.isAnalyzing
-                    
-                    if (state.emails.isNotEmpty() && binding.etEmail.text.isEmpty()) {
+                    binding.progressAnalysis.visibility =
+                        if (state.isAnalyzing) android.view.View.VISIBLE else android.view.View.INVISIBLE
+
+                    if (state.emails.isNotEmpty() && binding.etEmail.text.isNullOrEmpty()) {
                         binding.etEmail.setText(state.emails)
                     }
-                    
+
                     state.analysisError?.let {
                         Toast.makeText(this@SendMailActivity, it, Toast.LENGTH_SHORT).show()
                     }
@@ -134,14 +136,15 @@ class SendMailActivity : AppCompatActivity() {
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "application/pdf"
             val emailText = binding.etEmail.text.toString()
-            val emails = emailText.split(Regex("[,;]")).map { it.trim() }.filter { it.isNotEmpty() }.toTypedArray()
+            val emails = emailText.split(Regex("[,;]")).map { it.trim() }.filter { it.isNotEmpty() }
+                .toTypedArray()
             putExtra(Intent.EXTRA_EMAIL, emails)
             putExtra(Intent.EXTRA_SUBJECT, profile.subject)
             putExtra(Intent.EXTRA_TEXT, profile.body)
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
-        
+
         try {
             val gmailIntent = Intent(intent)
             gmailIntent.setPackage("com.google.android.gm")

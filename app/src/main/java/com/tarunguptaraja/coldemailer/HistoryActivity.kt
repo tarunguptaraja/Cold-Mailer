@@ -58,6 +58,13 @@ class HistoryActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
                     adapter.updateData(state.historyList)
+                    if (state.historyList.isEmpty()) {
+                        binding.emptyState.visibility = android.view.View.VISIBLE
+                        binding.recyclerHistory.visibility = android.view.View.GONE
+                    } else {
+                        binding.emptyState.visibility = android.view.View.GONE
+                        binding.recyclerHistory.visibility = android.view.View.VISIBLE
+                    }
                 }
             }
         }
