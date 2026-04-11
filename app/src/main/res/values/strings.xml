@@ -1,3 +1,42 @@
 <resources>
     <string name="app_name">Cold Mailer</string>
+    
+    <!-- Profile Setup Screen -->
+    <string name="profile_setup_title">Profile Setup</string>
+    <string name="profile_setup_subtitle">Set up your profile to generate intelligent cold emails.</string>
+    <string name="hint_name">Your Name (e.g. Tarun Gupta)</string>
+    <string name="hint_subject">Base Subject (e.g. Application for Android Developer)</string>
+    <string name="hint_body">Base Email Body</string>
+    <string name="label_resume_attachment">Resume Attachment</string>
+    <string name="msg_no_resume">No Resume Uploaded</string>
+    <string name="btn_upload">Upload</string>
+    <string name="btn_save_continue">Save &amp; Continue</string>
+    <string name="err_enter_name">Please enter your name first</string>
+    <string name="err_save_pdf">Failed to save PDF</string>
+
+    <!-- Send Email Screen -->
+    <string name="app_title">Cold Mailer</string>
+    <string name="label_smart_importer">Smart Importer (AI)</string>
+    <string name="subtitle_smart_importer">Paste JD or add a screenshot to generate personalized emails.</string>
+    <string name="hint_jd_text">Paste JD text here...</string>
+    <string name="btn_analyze_ai">Analyze with AI</string>
+    <string name="btn_analyzing">Analyzing...</string>
+    <string name="label_email_details">Email Details</string>
+    <string name="hint_recipient_email">Recipient Email</string>
+    <string name="msg_automation_info">Your email content will be sent automatically via Gmail, attaching your selected resume.</string>
+    <string name="btn_send_email">Send Email with Resume</string>
+    <string name="msg_screenshot_selected">Screenshot selected</string>
+    <string name="err_invalid_email">Invalid Email</string>
+    <string name="err_no_pdf">No PDF found</string>
+    <string name="err_no_profile">No Profile Data Found</string>
+
+    <!-- History Screen -->
+    <string name="history_title">Sent History</string>
+    <string name="empty_history">No history found</string>
+    <string name="dialog_options">Options</string>
+    <string name="opt_send_followup">Send Follow-up Email</string>
+    <string name="opt_delete">Delete from History</string>
+    <string name="err_no_email_app">No email app found</string>
+    <string name="default_followup">Hi,\n\nJust following up on my previous email. I would love to connect soon!\n\nThanks.</string>
+    <string name="label_needs_followup">Needs Follow-up</string>
 </resources>

@@ -23,7 +23,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_16sdp"
             android:fontFamily="@font/montserrat_bold"
-            android:text="Profile Setup"
+            android:text="@string/profile_setup_title"
             android:textColor="@color/white"
             android:textSize="@dimen/_18sdp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -62,7 +62,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/_24sdp"
-                android:text="Set up your profile to generate intelligent cold emails."
+                android:text="@string/profile_setup_subtitle"
                 android:textColor="@color/colorTextSecondary"
                 android:textSize="@dimen/_13sdp" />
 
@@ -70,7 +70,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/_16sdp"
-                android:hint="Your Name (e.g. Tarun Gupta)"
+                android:hint="@string/hint_name"
                 app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
                 app:boxCornerRadiusBottomStart="@dimen/_8sdp"
                 app:boxCornerRadiusTopEnd="@dimen/_8sdp"
@@ -92,7 +92,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/_16sdp"
-                android:hint="Base Subject (e.g. Application for Android Developer)"
+                android:hint="@string/hint_subject"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
                 app:boxCornerRadiusBottomStart="@dimen/_8sdp"
@@ -114,7 +114,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/_16sdp"
-                android:hint="Base Email Body"
+                android:hint="@string/hint_body"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
                 app:boxCornerRadiusBottomStart="@dimen/_8sdp"
@@ -137,7 +137,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Resume Attachment"
+                android:text="@string/label_resume_attachment"
                 android:fontFamily="@font/montserrat_bold"
                 android:textColor="@color/colorTextPrimary"
                 android:textSize="@dimen/_13sdp"
@@ -171,7 +171,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/montserrat"
-                        android:text="No Resume Uploaded"
+                        android:text="@string/msg_no_resume"
                         android:textColor="@color/colorTextPrimary"
                         android:textSize="@dimen/_13sdp" />
 
@@ -185,7 +185,7 @@
                         android:padding="0dp"
                         android:minWidth="0dp"
                         android:minHeight="0dp"
-                        android:text="Upload" />
+                        android:text="@string/btn_upload" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -207,7 +207,7 @@
             android:layout_height="wrap_content"
             android:paddingVertical="@dimen/_12sdp"
             android:fontFamily="@font/montserrat_bold"
-            android:text="Save &amp; Continue"
+            android:text="@string/btn_save_continue"
             android:textSize="@dimen/_15sdp"
             app:backgroundTint="@color/colorPrimary" />
     </FrameLayout>

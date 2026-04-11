@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.uploadResume.setOnClickListener {
             if (binding.etName.text.isNullOrEmpty()) {
-                Toast.makeText(this, "Please enter your name first", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.err_enter_name), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             openPdfPicker()
@@ -116,7 +116,7 @@ class MainActivity : AppCompatActivity() {
             outputStream.close()
             fileName
         } catch (e: Exception) {
-            Toast.makeText(this, "Failed to save PDF", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.err_save_pdf), Toast.LENGTH_SHORT).show()
             null
         }
     }

@@ -3,6 +3,8 @@ package com.tarunguptaraja.coldemailer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.tarunguptaraja.coldemailer.databinding.ItemHistoryBinding
 import com.tarunguptaraja.coldemailer.domain.model.EmailHistory
@@ -12,10 +14,9 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class HistoryAdapter(
-    private var historyList: List<EmailHistory>,
     private val onItemClick: (EmailHistory) -> Unit,
     private val onFollowUpClick: (EmailHistory) -> Unit
-) : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() {
+) : ListAdapter<EmailHistory, HistoryAdapter.HistoryViewHolder>(HistoryDiffCallback()) {
 
     inner class HistoryViewHolder(val binding: ItemHistoryBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -25,7 +26,7 @@ class HistoryAdapter(
     }
 
     override fun onBindViewHolder(holder: HistoryViewHolder, position: Int) {
-        val emailHistory = historyList[position]
+        val emailHistory = getItem(position)
         holder.binding.tvEmail.text = emailHistory.email
         holder.binding.tvSubject.text = emailHistory.subject
 
@@ -51,10 +52,13 @@ class HistoryAdapter(
         }
     }
 
-    override fun getItemCount(): Int = historyList.size
-    
-    fun updateData(newList: List<EmailHistory>) {
-        historyList = newList
-        notifyDataSetChanged()
+    class HistoryDiffCallback : DiffUtil.ItemCallback<EmailHistory>() {
+        override fun areItemsTheSame(oldItem: EmailHistory, newItem: EmailHistory): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: EmailHistory, newItem: EmailHistory): Boolean {
+            return oldItem == newItem
+        }
     }
 }

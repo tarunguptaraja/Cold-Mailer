@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_12sdp"
             android:fontFamily="@font/montserrat_bold"
-            android:text="Cold Emailer"
+            android:text="@string/app_title"
             android:textColor="@color/white"
             android:textSize="@dimen/_16sdp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -98,7 +98,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/montserrat_bold"
-                            android:text="Smart Importer (AI)"
+                            android:text="@string/label_smart_importer"
                             android:textColor="@color/colorTextPrimary"
                             android:textSize="@dimen/_15sdp" />
                     </LinearLayout>
@@ -107,7 +107,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/montserrat"
-                        android:text="Paste JD or add a screenshot to generate personalized emails."
+                        android:text="@string/subtitle_smart_importer"
                         android:textColor="@color/colorTextSecondary"
                         android:textSize="@dimen/_12sdp"
                         android:layout_marginTop="@dimen/_4sdp"
@@ -122,7 +122,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:hint="Paste JD text here..."
+                            android:hint="@string/hint_jd_text"
                             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                             app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
                             app:boxCornerRadiusBottomStart="@dimen/_8sdp"
@@ -170,7 +170,7 @@
                         android:layout_marginTop="@dimen/_12sdp"
                         android:fontFamily="@font/montserrat_bold"
                         android:paddingVertical="@dimen/_10sdp"
-                        android:text="Analyze with AI"
+                        android:text="@string/btn_analyze_ai"
                         android:textSize="@dimen/_13sdp"
                         app:cornerRadius="@dimen/_8sdp"
                         app:backgroundTint="@color/colorAccent" />
@@ -193,7 +193,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/montserrat_bold"
-                android:text="Email Details"
+                android:text="@string/label_email_details"
                 android:textColor="@color/colorTextPrimary"
                 android:textSize="@dimen/_15sdp"
                 android:layout_marginBottom="@dimen/_8sdp"/>
@@ -201,7 +201,7 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Recipient Email"
+                android:hint="@string/hint_recipient_email"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
                 app:boxCornerRadiusBottomStart="@dimen/_8sdp"
@@ -224,7 +224,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/montserrat"
-                android:text="Your email content will be sent automatically via Gmail, attaching your selected resume."
+                android:text="@string/msg_automation_info"
                 android:textColor="@color/colorTextSecondary"
                 android:textSize="@dimen/_12sdp"/>
 
@@ -246,7 +246,7 @@
             android:layout_height="wrap_content"
             android:fontFamily="@font/montserrat_bold"
             android:paddingVertical="@dimen/_12sdp"
-            android:text="Send Email with Resume"
+            android:text="@string/btn_send_email"
             android:textSize="@dimen/_15sdp"
             app:cornerRadius="@dimen/_8sdp"
             app:backgroundTint="@color/colorPrimary" />

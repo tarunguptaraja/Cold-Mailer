@@ -38,7 +38,7 @@ class SendMailActivity : AppCompatActivity() {
             val bitmap = BitmapFactory.decodeStream(inputStream)
             viewModel.onScreenshotSelected(bitmap)
             binding.btnScreenshot.setImageBitmap(bitmap)
-            Toast.makeText(this, "Screenshot selected", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.msg_screenshot_selected), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -63,7 +63,7 @@ class SendMailActivity : AppCompatActivity() {
         binding.sendEmail.setOnClickListener {
             val emailText = binding.etEmail.text.toString()
             if (emailText.isEmpty() || !emailText.contains("@")) {
-                Toast.makeText(this, "Invalid Email", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.err_invalid_email), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -75,10 +75,10 @@ class SendMailActivity : AppCompatActivity() {
                     sendPdfInGmail(pdfFile, it.copy(body = bodyToSend))
                     viewModel.saveSentHistory(emailText)
                 } else {
-                    Toast.makeText(this, "No PDF found", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.err_no_pdf), Toast.LENGTH_SHORT).show()
                 }
             } ?: run {
-                Toast.makeText(this, "No Profile Data Found", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.err_no_profile), Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -104,7 +104,7 @@ class SendMailActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
                     binding.btnAnalyze.text =
-                        if (state.isAnalyzing) "Analyzing..." else "Analyze with AI"
+                        if (state.isAnalyzing) getString(R.string.btn_analyzing) else getString(R.string.btn_analyze_ai)
                     binding.btnAnalyze.isEnabled = !state.isAnalyzing
                     binding.progressAnalysis.visibility =
                         if (state.isAnalyzing) android.view.View.VISIBLE else android.view.View.INVISIBLE
@@ -150,7 +150,7 @@ class SendMailActivity : AppCompatActivity() {
             gmailIntent.setPackage("com.google.android.gm")
             startActivity(gmailIntent)
         } catch (e: android.content.ActivityNotFoundException) {
-            startActivity(Intent.createChooser(intent, "Send Email"))
+            startActivity(Intent.createChooser(intent, getString(R.string.btn_send_email)))
         }
     }
 }

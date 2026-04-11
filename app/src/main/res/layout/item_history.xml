@@ -81,7 +81,7 @@
                         android:paddingHorizontal="@dimen/_8sdp"
                         android:paddingVertical="@dimen/_4sdp"
                         android:fontFamily="@font/montserrat_bold"
-                        android:text="Needs Follow-up"
+                        android:text="@string/label_needs_followup"
                         android:textColor="@color/colorWarningText"
                         android:textSize="@dimen/_10sdp" />
                 </com.google.android.material.card.MaterialCardView>

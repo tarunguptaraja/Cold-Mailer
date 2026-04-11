@@ -44,7 +44,7 @@ class HistoryActivity : AppCompatActivity() {
     }
     
     private fun setupRecyclerView() {
-        adapter = HistoryAdapter(emptyList(), { historyItem ->
+        adapter = HistoryAdapter({ historyItem ->
             showOptionsDialog(historyItem)
         }, { historyItem ->
             sendFollowUp(historyItem)
@@ -57,7 +57,7 @@ class HistoryActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
-                    adapter.updateData(state.historyList)
+                    adapter.submitList(state.historyList)
                     if (state.historyList.isEmpty()) {
                         binding.emptyState.visibility = android.view.View.VISIBLE
                         binding.recyclerHistory.visibility = android.view.View.GONE
@@ -71,7 +71,7 @@ class HistoryActivity : AppCompatActivity() {
     }
     
     private fun showOptionsDialog(historyItem: EmailHistory) {
-        val options = arrayOf("Send Follow-up Email", "Delete from History")
+        val options = arrayOf(getString(R.string.opt_send_followup), getString(R.string.opt_delete))
         AlertDialog.Builder(this)
             .setTitle(historyItem.email)
             .setItems(options) { _, which ->
@@ -90,17 +90,15 @@ class HistoryActivity : AppCompatActivity() {
             data = Uri.parse("mailto:") 
             putExtra(Intent.EXTRA_EMAIL, arrayOf(historyItem.email))
             putExtra(Intent.EXTRA_SUBJECT, "Re: ${historyItem.subject}")
-            val followUpText = if (historyItem.followUp.isNotEmpty()) {
-                historyItem.followUp
-            } else {
-                "Hi,\n\nJust following up on my previous email. I would love to connect soon!\n\nThanks."
+            val followUpText = historyItem.followUp.ifEmpty {
+                getString(R.string.default_followup)
             }
             putExtra(Intent.EXTRA_TEXT, followUpText)
         }
         try {
             startActivity(intent)
         } catch (e: Exception) {
-            Toast.makeText(this, "No email app found", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.err_no_email_app), Toast.LENGTH_SHORT).show()
         }
     }
 }
