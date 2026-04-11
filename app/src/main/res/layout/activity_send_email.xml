@@ -43,12 +43,69 @@
             android:textStyle="bold" />
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/ll_smart_importer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_24sdp"
+        android:layout_marginTop="@dimen/_20sdp"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@+id/tv_title">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Smart Importer (AI)"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_14sdp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_8sdp"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/et_jd_text"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/_40sdp"
+                android:layout_weight="1"
+                android:background="@drawable/border"
+                android:hint="Paste JD or URL"
+                android:paddingHorizontal="@dimen/_6sdp"
+                android:textSize="@dimen/_10sdp" />
+
+            <ImageView
+                android:id="@+id/btn_screenshot"
+                android:layout_width="@dimen/_40sdp"
+                android:layout_height="@dimen/_40sdp"
+                android:layout_marginStart="@dimen/_8sdp"
+                android:background="@drawable/border"
+                android:padding="@dimen/_8sdp"
+                android:src="@android:drawable/ic_menu_camera" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/btn_analyze"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_32sdp"
+            android:layout_marginTop="@dimen/_8sdp"
+            android:background="@drawable/border"
+            android:backgroundTint="#FF9800"
+            android:gravity="center"
+            android:text="Analyze with AI"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_12sdp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
     <EditText
         android:id="@+id/et_email"
         android:layout_width="match_parent"
         android:layout_height="@dimen/_42sdp"
         android:layout_marginHorizontal="@dimen/_24sdp"
-        android:layout_marginTop="@dimen/_72sdp"
+        android:layout_marginTop="@dimen/_20sdp"
         android:autofillHints="emailAddress"
         android:background="@drawable/border"
         android:hint="Enter Email"
@@ -60,7 +117,7 @@
         android:textSize="@dimen/_12sdp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_title" />
+        app:layout_constraintTop_toBottomOf="@+id/ll_smart_importer" />
 
     <TextView
         android:id="@+id/send_email"

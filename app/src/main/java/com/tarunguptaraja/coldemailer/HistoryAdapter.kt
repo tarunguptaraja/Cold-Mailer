@@ -12,7 +12,8 @@ import java.util.concurrent.TimeUnit
 
 class HistoryAdapter(
     private var historyList: List<EmailHistory>,
-    private val onItemClick: (EmailHistory) -> Unit
+    private val onItemClick: (EmailHistory) -> Unit,
+    private val onFollowUpClick: (EmailHistory) -> Unit
 ) : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() {
 
     inner class HistoryViewHolder(val binding: ItemHistoryBinding) : RecyclerView.ViewHolder(binding.root)
@@ -42,6 +43,10 @@ class HistoryAdapter(
 
         holder.itemView.setOnClickListener {
             onItemClick(emailHistory)
+        }
+        
+        holder.binding.tvFollowUp.setOnClickListener {
+            onFollowUpClick(emailHistory)
         }
     }
 

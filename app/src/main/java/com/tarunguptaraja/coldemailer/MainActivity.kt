@@ -9,7 +9,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.tarunguptaraja.coldemailer.databinding.ActivityMainBinding
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 
@@ -24,6 +26,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         profilePrefs = ProfilePreferenceManager(this)
         setContentView(binding.root)
+
+        ResumeParser.init(this)
 
         loadSavedProfile()
 
@@ -50,7 +54,8 @@ class MainActivity : AppCompatActivity() {
                 binding.etName.text.toString().trim(),
                 binding.etSubject.text.toString().trim(),
                 binding.etBody.text.toString().trim(),
-                fileName
+                fileName,
+                profilePrefs.getResumeText()
             )
             profilePrefs.saveProfile(data)
             Toast.makeText(this, "Profile saved successfully", Toast.LENGTH_SHORT).show()
@@ -74,6 +79,7 @@ class MainActivity : AppCompatActivity() {
     ) { uri ->
         uri?.let {
             savePdfToAppStorage(it)
+            extractResumeText(it)
         }
     }
 
@@ -106,6 +112,18 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Toast.makeText(this, "Failed to save PDF", Toast.LENGTH_SHORT).show()
             null
+        }
+    }
+
+    private fun extractResumeText(uri: Uri) {
+        lifecycleScope.launch {
+            val text = ResumeParser.extractText(this@MainActivity, uri)
+            profilePrefs.setResumeText(text)
+            if (text.isNotEmpty()) {
+                Toast.makeText(this@MainActivity, "Resume text extracted and saved", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this@MainActivity, "Failed to extract text from resume", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

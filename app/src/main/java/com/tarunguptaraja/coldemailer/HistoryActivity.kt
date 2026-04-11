@@ -35,9 +35,11 @@ class HistoryActivity : AppCompatActivity() {
     }
     
     private fun setupRecyclerView() {
-        adapter = HistoryAdapter(emptyList()) { historyItem ->
+        adapter = HistoryAdapter(emptyList(), { historyItem ->
             showOptionsDialog(historyItem)
-        }
+        }, { historyItem ->
+            sendFollowUp(historyItem)
+        })
         binding.recyclerHistory.layoutManager = LinearLayoutManager(this)
         binding.recyclerHistory.adapter = adapter
     }
@@ -68,13 +70,17 @@ class HistoryActivity : AppCompatActivity() {
             data = Uri.parse("mailto:") 
             putExtra(Intent.EXTRA_EMAIL, arrayOf(historyItem.email))
             putExtra(Intent.EXTRA_SUBJECT, "Re: ${historyItem.subject}")
-            putExtra(Intent.EXTRA_TEXT, "Hi,\n\nJust following up on my previous email. I would love to connect soon!\n\nThanks.")
+            val followUpText = if (historyItem.followUp.isNotEmpty()) {
+                historyItem.followUp
+            } else {
+                "Hi,\n\nJust following up on my previous email. I would love to connect soon!\n\nThanks."
+            }
+            putExtra(Intent.EXTRA_TEXT, followUpText)
         }
         try {
             startActivity(intent)
             
-            dbHelper.deleteHistory(historyItem.id)
-            dbHelper.addHistory(historyItem.email, "Re: ${historyItem.subject}", System.currentTimeMillis())
+            dbHelper.addHistory(historyItem.email, "Re: ${historyItem.subject}", System.currentTimeMillis(), historyItem.body, historyItem.followUp)
             loadHistory()
             
         } catch (e: Exception) {
