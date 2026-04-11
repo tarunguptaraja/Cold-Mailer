@@ -1,10 +1,15 @@
 package com.tarunguptaraja.coldemailer
-
+ 
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.tarunguptaraja.coldemailer.domain.model.Profile
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class ProfilePreferenceManager(context: Context) {
+@Singleton
+class ProfilePreferenceManager @Inject constructor(@ApplicationContext context: Context) {
 
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -18,19 +23,19 @@ class ProfilePreferenceManager(context: Context) {
         private const val KEY_RESUME_TEXT = "resumeText"
     }
 
-    // Setter for ProfileData
-    fun saveProfile(profileData: ProfileData) {
+    // Setter for Profile
+    fun saveProfile(profile: Profile) {
         sharedPreferences.edit {
-            putString(KEY_NAME, profileData.name)
-            putString(KEY_SUBJECT, profileData.subject)
-            putString(KEY_BODY, profileData.body)
-            putString(KEY_RESUME_NAME, profileData.resumeName)
-            putString(KEY_RESUME_TEXT, profileData.resumeText)
+            putString(KEY_NAME, profile.name)
+            putString(KEY_SUBJECT, profile.subject)
+            putString(KEY_BODY, profile.body)
+            putString(KEY_RESUME_NAME, profile.resumeName)
+            putString(KEY_RESUME_TEXT, profile.resumeText)
         }
     }
 
-    // Getter for ProfileData
-    fun getProfile(): ProfileData? {
+    // Getter for Profile
+    fun getProfile(): Profile? {
         val name = sharedPreferences.getString(KEY_NAME, null)
         val subject = sharedPreferences.getString(KEY_SUBJECT, null)
         val body = sharedPreferences.getString(KEY_BODY, null)
@@ -38,7 +43,7 @@ class ProfilePreferenceManager(context: Context) {
         val resumeText = sharedPreferences.getString(KEY_RESUME_TEXT, "") ?: ""
 
         return if (name != null && subject != null && body != null && resumeName != null) {
-            ProfileData(name, subject, body, resumeName, resumeText)
+            Profile(name, subject, body, resumeName, resumeText)
         } else {
             null
         }

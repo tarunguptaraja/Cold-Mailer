@@ -4,17 +4,26 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tarunguptaraja.coldemailer.databinding.ActivityHistoryBinding
+import com.tarunguptaraja.coldemailer.domain.model.EmailHistory
+import com.tarunguptaraja.coldemailer.presentation.history.HistoryViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class HistoryActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHistoryBinding
-    private val dbHelper by lazy { DatabaseHelper(this) }
+    private val viewModel: HistoryViewModel by viewModels()
     private lateinit var adapter: HistoryAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,7 +40,7 @@ class HistoryActivity : AppCompatActivity() {
         binding.btnBack.setOnClickListener { finish() }
 
         setupRecyclerView()
-        loadHistory()
+        observeState()
     }
     
     private fun setupRecyclerView() {
@@ -44,9 +53,14 @@ class HistoryActivity : AppCompatActivity() {
         binding.recyclerHistory.adapter = adapter
     }
 
-    private fun loadHistory() {
-        val historyList = dbHelper.getAllHistory()
-        adapter.updateData(historyList)
+    private fun observeState() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    adapter.updateData(state.historyList)
+                }
+            }
+        }
     }
     
     private fun showOptionsDialog(historyItem: EmailHistory) {
@@ -57,8 +71,7 @@ class HistoryActivity : AppCompatActivity() {
                 when (which) {
                     0 -> sendFollowUp(historyItem)
                     1 -> {
-                        dbHelper.deleteHistory(historyItem.id)
-                        loadHistory()
+                        viewModel.deleteHistory(historyItem.id)
                     }
                 }
             }
@@ -79,10 +92,6 @@ class HistoryActivity : AppCompatActivity() {
         }
         try {
             startActivity(intent)
-            
-            dbHelper.addHistory(historyItem.email, "Re: ${historyItem.subject}", System.currentTimeMillis(), historyItem.body, historyItem.followUp)
-            loadHistory()
-            
         } catch (e: Exception) {
             Toast.makeText(this, "No email app found", Toast.LENGTH_SHORT).show()
         }

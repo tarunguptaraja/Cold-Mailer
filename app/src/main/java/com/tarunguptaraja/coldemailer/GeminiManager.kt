@@ -1,13 +1,19 @@
 package com.tarunguptaraja.coldemailer
-
+ 
 import android.graphics.Bitmap
 import android.util.Log
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
+import com.tarunguptaraja.coldemailer.domain.model.JobAnalysis
+import com.tarunguptaraja.coldemailer.domain.model.Profile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class GeminiManager(private val apiKey: String) {
+@Singleton
+class GeminiManager @Inject constructor(private val apiKey: String) {
 
     private val generativeModel = GenerativeModel(
         modelName = "gemini-2.5-flash",
@@ -17,8 +23,8 @@ class GeminiManager(private val apiKey: String) {
     suspend fun analyzeJD(
         input: Any,
         resumeText: String,
-        userProfile: ProfileData
-    ): AnalysisResult? = withContext(Dispatchers.IO) {
+        userProfile: Profile
+    ): JobAnalysis? = withContext(Dispatchers.IO) {
         try {
             val prompt = """
                 You are an expert recruitment assistant. 
@@ -76,44 +82,30 @@ class GeminiManager(private val apiKey: String) {
                 }
             }
         } catch (e: Exception) {
-            Log.e("GeminiManager", "Error analyzing JD", e)
+            val errorMessage = e.message ?: ""
+            if (errorMessage.contains("403") || errorMessage.contains("API key")) {
+                Log.e("GeminiManager", "Authentication Error: Please check your API key. It may be invalid or leaked.", e)
+            } else if (e is kotlinx.serialization.SerializationException) {
+                Log.e("GeminiManager", "Serialization Error: This may be due to a known SDK bug when parsing error responses.", e)
+            } else {
+                Log.e("GeminiManager", "Error analyzing JD: $errorMessage", e)
+            }
             null
         }
     }
 
-    private fun parseResult(json: String): AnalysisResult {
-        // Simple manual parsing for demo purposes
-        fun unescape(text: String): String {
-            return text.replace("\\n", "\n")
-                .replace("\\\"", "\"")
-                .replace("\\\\", "\\")
-                .trim()
-        }
-
-        val emails = Regex("\"emails\":\\s*\\[(.*?)\\]").find(json)?.groupValues?.get(1)
-            ?.split(",")?.map { it.trim().removeSurrounding("\"") } ?: emptyList()
-            
-        val company = unescape(Regex("\"company\":\\s*\"(.*?)\"").find(json)?.groupValues?.get(1) ?: "")
-        val role = unescape(Regex("\"role\":\\s*\"(.*?)\"").find(json)?.groupValues?.get(1) ?: "")
-        
-        val initialBody = unescape(
-            Regex("\"initialBody\":\\s*\"(.*?)\"", RegexOption.DOT_MATCHES_ALL)
-                .find(json)?.groupValues?.get(1) ?: ""
-        )
-        
-        val followUpBody = unescape(
-            Regex("\"followUpBody\":\\s*\"(.*?)\"", RegexOption.DOT_MATCHES_ALL)
-                .find(json)?.groupValues?.get(1) ?: ""
-        )
-
-        return AnalysisResult(emails, company, role, initialBody, followUpBody)
+    private val jsonParser = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+        coerceInputValues = true
     }
 
-    data class AnalysisResult(
-        val emails: List<String>,
-        val company: String,
-        val role: String,
-        val initialBody: String,
-        val followUpBody: String
-    )
+    private fun parseResult(json: String): JobAnalysis? {
+        return try {
+            jsonParser.decodeFromString<JobAnalysis>(json)
+        } catch (e: Exception) {
+            Log.e("GeminiManager", "Error parsing JSON: ${e.message}", e)
+            null
+        }
+    }
 }

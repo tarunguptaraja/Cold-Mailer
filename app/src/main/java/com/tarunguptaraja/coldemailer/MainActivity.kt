@@ -6,36 +6,46 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.doAfterTextChanged
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.tarunguptaraja.coldemailer.databinding.ActivityMainBinding
+import com.tarunguptaraja.coldemailer.presentation.profile.ProfileViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var profilePrefs: ProfilePreferenceManager
-    var fileName: String = "resume.pdf"
+    private val viewModel: ProfileViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
-        profilePrefs = ProfilePreferenceManager(this)
         setContentView(binding.root)
-
-        ResumeParser.init(this)
-
-        loadSavedProfile()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        setupListeners()
+        observeState()
+    }
+
+    private fun setupListeners() {
+        binding.etName.doAfterTextChanged { viewModel.onNameChanged(it.toString()) }
+        binding.etSubject.doAfterTextChanged { viewModel.onSubjectChanged(it.toString()) }
+        binding.etBody.doAfterTextChanged { viewModel.onBodyChanged(it.toString()) }
 
         binding.uploadResume.setOnClickListener {
             if (binding.etName.text.isNullOrEmpty()) {
@@ -45,32 +55,33 @@ class MainActivity : AppCompatActivity() {
             openPdfPicker()
         }
 
-        binding.btnBack.setOnClickListener {
-            finish()
-        }
+        binding.btnBack.setOnClickListener { finish() }
 
         binding.tvSave.setOnClickListener {
-            val data = ProfileData(
-                binding.etName.text.toString().trim(),
-                binding.etSubject.text.toString().trim(),
-                binding.etBody.text.toString().trim(),
-                fileName,
-                profilePrefs.getResumeText()
-            )
-            profilePrefs.saveProfile(data)
-            Toast.makeText(this, "Profile saved successfully", Toast.LENGTH_SHORT).show()
-            goToSendScreen()
+            viewModel.saveProfile()
         }
     }
 
-    private fun loadSavedProfile() {
-        binding.etName.setText(profilePrefs.getName())
-        binding.etSubject.setText(profilePrefs.getSubject())
-        binding.etBody.setText(profilePrefs.getBody())
-        val savedResumeName = profilePrefs.getResumeName()
-        if (savedResumeName.isNotEmpty()) {
-            fileName = savedResumeName
-            binding.tvResume.text = savedResumeName
+    private fun observeState() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    if (binding.etName.text.toString() != state.name) binding.etName.setText(state.name)
+                    if (binding.etSubject.text.toString() != state.subject) binding.etSubject.setText(state.subject)
+                    if (binding.etBody.text.toString() != state.body) binding.etBody.setText(state.body)
+                    
+                    binding.tvResume.text = state.resumeName
+                    
+                    state.message?.let {
+                        Toast.makeText(this@MainActivity, it, Toast.LENGTH_SHORT).show()
+                        viewModel.clearMessage()
+                    }
+                    
+                    if (state.isProfileSaved) {
+                        goToSendScreen()
+                    }
+                }
+            }
         }
     }
 
@@ -78,8 +89,10 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.OpenDocument()
     ) { uri ->
         uri?.let {
-            savePdfToAppStorage(it)
-            extractResumeText(it)
+            val fileName = savePdfToAppStorage(it)
+            if (fileName != null) {
+                viewModel.onResumeSelected(it, fileName)
+            }
         }
     }
 
@@ -87,18 +100,13 @@ class MainActivity : AppCompatActivity() {
         pickPdfLauncher.launch(arrayOf("application/pdf"))
     }
 
-    private fun savePdfToAppStorage(uri: Uri): File? {
+    private fun savePdfToAppStorage(uri: Uri): String? {
         return try {
             val inputStream = contentResolver.openInputStream(uri) ?: return null
-
             val pdfDir = File(getExternalFilesDir(null), "pdfs")
             if (!pdfDir.exists()) pdfDir.mkdirs()
 
-            fileName = "${binding.etName.text.toString().trim().replace(" ", "_")}_Resume.pdf"
-
-            // Also save the filename to preferences
-            profilePrefs.setResumeName(fileName)
-
+            val fileName = "${binding.etName.text.toString().trim().replace(" ", "_")}_Resume.pdf"
             val pdfFile = File(pdfDir, fileName)
 
             val outputStream = FileOutputStream(pdfFile)
@@ -106,24 +114,10 @@ class MainActivity : AppCompatActivity() {
 
             inputStream.close()
             outputStream.close()
-            binding.tvResume.text = fileName
-            Toast.makeText(this, "Saved:\n${pdfFile.name}", Toast.LENGTH_SHORT).show()
-            pdfFile
+            fileName
         } catch (e: Exception) {
             Toast.makeText(this, "Failed to save PDF", Toast.LENGTH_SHORT).show()
             null
-        }
-    }
-
-    private fun extractResumeText(uri: Uri) {
-        lifecycleScope.launch {
-            val text = ResumeParser.extractText(this@MainActivity, uri)
-            profilePrefs.setResumeText(text)
-            if (text.isNotEmpty()) {
-                Toast.makeText(this@MainActivity, "Resume text extracted and saved", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this@MainActivity, "Failed to extract text from resume", Toast.LENGTH_SHORT).show()
-            }
         }
     }
 

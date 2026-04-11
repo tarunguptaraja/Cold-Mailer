@@ -1,20 +1,16 @@
 package com.tarunguptaraja.coldemailer
-
+ 
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import com.tarunguptaraja.coldemailer.domain.model.EmailHistory
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-data class EmailHistory(
-    val id: Long = 0,
-    val email: String,
-    val subject: String,
-    val dateSent: Long, // timestamp
-    val body: String = "",
-    val followUp: String = ""
-)
-
-class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+@Singleton
+class DatabaseHelper @Inject constructor(@ApplicationContext context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
         private const val DATABASE_VERSION = 2

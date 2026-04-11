@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.tarunguptaraja.coldemailer.databinding.ItemHistoryBinding
+import com.tarunguptaraja.coldemailer.domain.model.EmailHistory
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
