@@ -115,13 +115,19 @@ jobs:
           subject: "🚀 ColdEmailer Released: ${{ steps.versioning.outputs.new_tag }}"
           to: ${{ secrets.USER_EMAIL }}
           from: "ColdEmailer Build Bot"
+          attachments: app/build/outputs/apk/release/cold-emailer.apk
           body: |
             The new build for ColdEmailer is now live!
             
             Version: ${{ steps.versioning.outputs.new_tag }}
             Version Code: ${{ steps.versioning.outputs.version_code }}
             
-            You can download the APK (cold-emailer.apk) directly from the GitHub Release page:
+            ✅ The APK is attached to this email for direct download.
+            
+            Alternatively, you can find the release on GitHub:
             https://github.com/${{ github.repository }}/releases/tag/${{ steps.versioning.outputs.new_tag }}
+            
+            Direct Link (Requires GitHub Login):
+            https://github.com/${{ github.repository }}/releases/download/${{ steps.versioning.outputs.new_tag }}/cold-emailer.apk
             
             Happy Cold Emailing!
