@@ -2,6 +2,7 @@ package com.tarunguptaraja.coldemailer
  
 import android.graphics.Bitmap
 import android.util.Log
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import com.tarunguptaraja.coldemailer.domain.model.JobAnalysis
@@ -13,7 +14,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class GeminiManager @Inject constructor(private val apiKey: String) {
+class GeminiManager @Inject constructor(
+    private val apiKey: String,
+    private val crashlytics: FirebaseCrashlytics
+) {
 
     private val generativeModel = GenerativeModel(
         modelName = "gemini-2.5-flash",
@@ -90,6 +94,8 @@ class GeminiManager @Inject constructor(private val apiKey: String) {
             } else {
                 Log.e("GeminiManager", "Error analyzing JD: $errorMessage", e)
             }
+            crashlytics.recordException(e)
+            e.printStackTrace()
             null
         }
     }

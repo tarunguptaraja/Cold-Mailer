@@ -3,7 +3,8 @@ package com.tarunguptaraja.coldemailer.presentation.send
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tarunguptaraja.coldemailer.domain.model.JobAnalysis
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.logEvent
 import com.tarunguptaraja.coldemailer.domain.model.Profile
 import com.tarunguptaraja.coldemailer.domain.use_case.AddHistoryUseCase
 import com.tarunguptaraja.coldemailer.domain.use_case.AnalyzeJobUseCase
@@ -23,14 +24,17 @@ data class SendMailUiState(
     val generatedFollowUp: String? = null,
     val isAnalyzing: Boolean = false,
     val analysisError: String? = null,
-    val screenshot: Bitmap? = null
+    val screenshot: Bitmap? = null,
+    val company: String? = null,
+    val role: String? = null
 )
 
 @HiltViewModel
 class SendMailViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val analyzeJobUseCase: AnalyzeJobUseCase,
-    private val addHistoryUseCase: AddHistoryUseCase
+    private val addHistoryUseCase: AddHistoryUseCase,
+    private val analytics: FirebaseAnalytics
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SendMailUiState())
@@ -51,7 +55,6 @@ class SendMailViewModel @Inject constructor(
     fun analyzeJob() {
         val state = _uiState.value
         val profile = state.profile ?: return
-        
         val input: Any = state.screenshot ?: state.jdText
         if (input is String && input.isEmpty()) return
 
@@ -64,10 +67,13 @@ class SendMailViewModel @Inject constructor(
                     isAnalyzing = false,
                     emails = result.emails.joinToString(", "),
                     modifiedBody = result.initialBody,
-                    generatedFollowUp = result.followUpBody
+                    generatedFollowUp = result.followUpBody,
+                    company = result.company,
+                    role = result.role
                 )
             } else {
-                _uiState.value = _uiState.value.copy(isAnalyzing = false, analysisError = "Analysis failed")
+                _uiState.value =
+                    _uiState.value.copy(isAnalyzing = false, analysisError = "Analysis failed")
             }
         }
     }
@@ -75,11 +81,11 @@ class SendMailViewModel @Inject constructor(
     fun saveSentHistory(recipientEmails: String) {
         val state = _uiState.value
         val profile = state.profile ?: return
-        val emailsList = recipientEmails.split(Regex("[,;]")).map { it.trim() }.filter { it.isNotEmpty() }
-        
+        val emailsList =
+            recipientEmails.split(Regex("[,;]")).map { it.trim() }.filter { it.isNotEmpty() }
         val bodyToSend = state.modifiedBody ?: profile.body
         val dateSent = System.currentTimeMillis()
-        
+
         emailsList.forEach { email ->
             addHistoryUseCase(
                 email,
@@ -88,6 +94,12 @@ class SendMailViewModel @Inject constructor(
                 bodyToSend,
                 state.generatedFollowUp ?: ""
             )
+
+            analytics.logEvent("email_sent") {
+                param("recipient_email", email)
+                param("company_name", state.company ?: "Unknown")
+                param("job_profile", state.role ?: "Unknown")
+            }
         }
     }
 }

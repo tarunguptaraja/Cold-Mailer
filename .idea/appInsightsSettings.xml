@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.tarunguptaraja.coldemailer" />
+                  <option name="mobileSdkAppId" value="1:169119885565:android:4835a5ea22cd127dba3694" />
+                  <option name="projectId" value="cold-mailer-42623" />
+                  <option name="projectNumber" value="169119885565" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

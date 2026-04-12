@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "169119885565",
+    "project_id": "cold-mailer-42623",
+    "storage_bucket": "cold-mailer-42623.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:169119885565:android:4835a5ea22cd127dba3694",
+        "android_client_info": {
+          "package_name": "com.tarunguptaraja.coldemailer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlvZqoP7cETS80RAn8YEZhJxYAkJCUfRw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
