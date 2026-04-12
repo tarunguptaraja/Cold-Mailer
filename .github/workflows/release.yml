@@ -115,19 +115,47 @@ jobs:
           subject: "🚀 ColdEmailer Released: ${{ steps.versioning.outputs.new_tag }}"
           to: ${{ secrets.USER_EMAIL }}
           from: "ColdEmailer Build Bot"
-          attachments: app/build/outputs/apk/release/cold-emailer.apk
-          body: |
-            The new build for ColdEmailer is now live!
-            
-            Version: ${{ steps.versioning.outputs.new_tag }}
-            Version Code: ${{ steps.versioning.outputs.version_code }}
-            
-            ✅ The APK is attached to this email for direct download.
-            
-            Alternatively, you can find the release on GitHub:
-            https://github.com/${{ github.repository }}/releases/tag/${{ steps.versioning.outputs.new_tag }}
-            
-            Direct Link (Requires GitHub Login):
-            https://github.com/${{ github.repository }}/releases/download/${{ steps.versioning.outputs.new_tag }}/cold-emailer.apk
-            
-            Happy Cold Emailing!
+          html_body: |
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+                    .container { max-width: 600px; margin: 20px auto; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+                    .header { background-color: #2ecc71; color: white; padding: 30px; text-align: center; }
+                    .header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
+                    .content { padding: 30px; background-color: #ffffff; }
+                    .version-badge { display: inline-block; background-color: #f1f8f5; color: #2ecc71; padding: 6px 15px; border-radius: 20px; font-weight: bold; margin-bottom: 20px; border: 1px solid #2ecc71; }
+                    .button { display: inline-block; background-color: #2ecc71; color: white !important; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 20px; box-shadow: 0 4px 6px rgba(46, 204, 113, 0.2); }
+                    .button:hover { background-color: #27ae60; }
+                    .footer { background-color: #f9f9f9; padding: 20px; text-align: center; font-size: 12px; color: #888; border-top: 1px solid #eeeeee; }
+                    .details { font-size: 14px; color: #666; margin-top: 10px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>🚀 ColdEmailer Released</h1>
+                    </div>
+                    <div class="content">
+                        <div class="version-badge">Version ${{ steps.versioning.outputs.new_tag }}</div>
+                        <p>A new build for <strong>ColdEmailer</strong> is now live and ready for download.</p>
+                        
+                        <div class="details">
+                            <strong>Release Tag:</strong> ${{ steps.versioning.outputs.new_tag }}<br>
+                            <strong>Build Number:</strong> ${{ steps.versioning.outputs.version_code }}
+                        </div>
+
+                        <center>
+                            <a href="https://github.com/${{ github.repository }}/releases/download/${{ steps.versioning.outputs.new_tag }}/cold-emailer.apk" class="button">Download APK Now</a>
+                        </center>
+                        
+                        <p style="margin-top: 30px;">Alternatively, view the full release notes on GitHub:</p>
+                        <a href="https://github.com/${{ github.repository }}/releases/tag/${{ steps.versioning.outputs.new_tag }}" style="color: #2ecc71;">View on GitHub</a>
+                    </div>
+                    <div class="footer">
+                        Happy Cold Emailing! &bull; Build Bot v1.0
+                    </div>
+                </div>
+            </body>
+            </html>
