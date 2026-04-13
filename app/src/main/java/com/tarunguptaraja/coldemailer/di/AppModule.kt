@@ -1,6 +1,7 @@
 package com.tarunguptaraja.coldemailer.di
 
 import android.content.Context
+import android.util.Log
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.tarunguptaraja.coldemailer.BuildConfig
@@ -49,6 +50,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideGeminiApiKey(): String {
+        Log.d("Gemini Manager", BuildConfig.GEMINI_API_KEY.toString())
         return BuildConfig.GEMINI_API_KEY
     }
 
