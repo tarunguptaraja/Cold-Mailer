@@ -1,5 +1,6 @@
 package com.tarunguptaraja.coldemailer.presentation.send
 
+import android.util.Log
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -53,15 +54,30 @@ class SendMailViewModel @Inject constructor(
     }
 
     fun analyzeJob() {
-        val state = _uiState.value
-        val profile = state.profile ?: return
-        val input: Any = state.screenshot ?: state.jdText
-        if (input is String && input.isEmpty()) return
+        Log.d("SendMailViewModel", "analyzeJob called")
+        // Refresh profile from repository
+        val currentProfile = getProfileUseCase()
+        _uiState.value = _uiState.value.copy(profile = currentProfile)
 
+        val state = _uiState.value
+        val profile = state.profile ?: run {
+            Log.d("SendMailViewModel", "Profile is null, returning")
+            _uiState.value = state.copy(analysisError = "Please set up your profile in settings first")
+            return
+        }
+        val input: Any = state.screenshot ?: state.jdText
+        if (input is String && input.isEmpty()) {
+            Log.d("SendMailViewModel", "JD Text is empty and no screenshot, returning")
+            return
+        }
+
+        Log.d("SendMailViewModel", "Starting analysis with input type: ${if (input is Bitmap) "Bitmap" else "String (length=${(input as String).length})"} ")
         _uiState.value = _uiState.value.copy(isAnalyzing = true, analysisError = null)
 
         viewModelScope.launch {
+            Log.d("SendMailViewModel", "Calling analyzeJobUseCase")
             val result = analyzeJobUseCase(input, profile.resumeText, profile)
+            Log.d("SendMailViewModel", "analyzeJobUseCase result received")
             if (result != null) {
                 _uiState.value = _uiState.value.copy(
                     isAnalyzing = false,
@@ -101,5 +117,9 @@ class SendMailViewModel @Inject constructor(
                 param("job_profile", state.role ?: "Unknown")
             }
         }
+    }
+
+    fun clearError() {
+        _uiState.value = _uiState.value.copy(analysisError = null)
     }
 }

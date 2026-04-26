@@ -1,5 +1,6 @@
 package com.tarunguptaraja.coldemailer.domain.use_case
 
+import android.util.Log
 import com.tarunguptaraja.coldemailer.domain.model.JobAnalysis
 import com.tarunguptaraja.coldemailer.domain.model.Profile
 import com.tarunguptaraja.coldemailer.domain.repository.EmailRepository
@@ -9,6 +10,7 @@ class AnalyzeJobUseCase @Inject constructor(
     private val repository: EmailRepository
 ) {
     suspend operator fun invoke(jdInput: Any, resumeText: String, profile: Profile): JobAnalysis? {
+        Log.d("AnalyzeJobUseCase", "Invoking analysis")
         return repository.analyzeJob(jdInput, resumeText, profile)
     }
 }

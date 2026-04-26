@@ -115,6 +115,7 @@ class SendMailActivity : AppCompatActivity() {
 
                     state.analysisError?.let {
                         Toast.makeText(this@SendMailActivity, it, Toast.LENGTH_SHORT).show()
+                        viewModel.clearError()
                     }
                 }
             }

@@ -29,6 +29,7 @@ class GeminiManager @Inject constructor(
         resumeText: String,
         userProfile: Profile
     ): JobAnalysis? = withContext(Dispatchers.IO) {
+        Log.d("GeminiManager", "analyzeJD called. Input type: ${if (input is Bitmap) "Bitmap" else "String"}")
         try {
             val prompt = """
                 You are an expert recruitment assistant. 
@@ -60,6 +61,7 @@ class GeminiManager @Inject constructor(
                 }
             """.trimIndent()
 
+            Log.d("GeminiManager", "Sending request to Gemini model: ${generativeModel.modelName}")
             val response = when (input) {
                 is String -> generativeModel.generateContent(content {
                     text(prompt)
@@ -69,21 +71,28 @@ class GeminiManager @Inject constructor(
                     text(prompt)
                     image(input)
                 })
-                else -> null
+                else -> {
+                    Log.d("GeminiManager", "Unknown input type: ${input::class.java.simpleName}")
+                    null
+                }
             }
 
             response?.text?.let { resultText ->
-                Log.d("GeminiManager", "Raw Response: $resultText")
+                Log.d("GeminiManager", "Raw Response received: $resultText")
                 // Extract JSON from the response text
                 val jsonRegex = Regex("\\{.*\\}", RegexOption.DOT_MATCHES_ALL)
                 val jsonMatch = jsonRegex.find(resultText)?.value
                 
                 if (jsonMatch != null) {
+                    Log.d("GeminiManager", "JSON match found: $jsonMatch")
                     parseResult(jsonMatch)
                 } else {
                     Log.e("GeminiManager", "No JSON found in response")
                     null
                 }
+            } ?: run {
+                Log.e("GeminiManager", "Response or response text is null")
+                null
             }
         } catch (e: Exception) {
             val errorMessage = e.message ?: ""
@@ -107,8 +116,11 @@ class GeminiManager @Inject constructor(
     }
 
     private fun parseResult(json: String): JobAnalysis? {
+        Log.d("GeminiManager", "Parsing JSON string")
         return try {
-            jsonParser.decodeFromString<JobAnalysis>(json)
+            val result = jsonParser.decodeFromString<JobAnalysis>(json)
+            Log.d("GeminiManager", "JSON parsed successfully: $result")
+            result
         } catch (e: Exception) {
             Log.e("GeminiManager", "Error parsing JSON: ${e.message}", e)
             null

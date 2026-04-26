@@ -50,8 +50,9 @@ object AppModule {
     @Provides
     @Singleton
     fun provideGeminiApiKey(): String {
-        Log.d("Gemini Manager", BuildConfig.GEMINI_API_KEY.toString())
-        return BuildConfig.GEMINI_API_KEY
+        val key = BuildConfig.GEMINI_API_KEY
+        Log.d("AppModule", "Providing Gemini API Key (length=${key.length}, prefix=${key.take(4)}...)")
+        return key
     }
 
     @Provides
