@@ -3,6 +3,7 @@ package com.tarunguptaraja.coldemailer.presentation.profile
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tarunguptaraja.coldemailer.domain.model.JobRole
 import com.tarunguptaraja.coldemailer.domain.model.Profile
 import com.tarunguptaraja.coldemailer.domain.use_case.ExtractResumeTextUseCase
 import com.tarunguptaraja.coldemailer.domain.use_case.GetProfileUseCase
@@ -12,14 +13,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 data class ProfileUiState(
     val name: String = "",
-    val subject: String = "",
-    val body: String = "",
-    val resumeName: String = "resume.pdf",
-    val resumeText: String = "",
+    val roles: List<JobRole> = emptyList(),
+    // Current Role being edited
+    val currentRoleId: String? = null,
+    val currentRoleName: String = "",
+    val currentSubject: String = "",
+    val currentBody: String = "",
+    val currentResumeName: String = "",
+    val currentResumeText: String = "",
+    
     val isLoading: Boolean = false,
     val message: String? = null,
     val isProfileSaved: Boolean = false
@@ -44,10 +51,7 @@ class ProfileViewModel @Inject constructor(
         profile?.let {
             _uiState.value = _uiState.value.copy(
                 name = it.name,
-                subject = it.subject,
-                body = it.body,
-                resumeName = it.resumeName,
-                resumeText = it.resumeText
+                roles = it.roles
             )
         }
     }
@@ -56,37 +60,98 @@ class ProfileViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(name = name)
     }
 
+    fun onRoleNameChanged(name: String) {
+        _uiState.value = _uiState.value.copy(currentRoleName = name)
+    }
+
     fun onSubjectChanged(subject: String) {
-        _uiState.value = _uiState.value.copy(subject = subject)
+        _uiState.value = _uiState.value.copy(currentSubject = subject)
     }
 
     fun onBodyChanged(body: String) {
-        _uiState.value = _uiState.value.copy(body = body)
+        _uiState.value = _uiState.value.copy(currentBody = body)
     }
 
     fun onResumeSelected(uri: Uri, fileName: String) {
-        _uiState.value = _uiState.value.copy(resumeName = fileName, isLoading = true)
+        _uiState.value = _uiState.value.copy(currentResumeName = fileName, isLoading = true)
         viewModelScope.launch {
             val text = extractResumeTextUseCase(uri)
             _uiState.value = _uiState.value.copy(
-                resumeText = text,
+                currentResumeText = text,
                 isLoading = false,
                 message = if (text.isNotEmpty()) "Resume text extracted" else "Failed to extract text"
             )
         }
     }
 
-    fun saveProfile() {
-        val state = _uiState.value
-        val profile = Profile(
-            state.name,
-            state.subject,
-            state.body,
-            state.resumeName,
-            state.resumeText
+    fun addNewRole() {
+        _uiState.value = _uiState.value.copy(
+            currentRoleId = UUID.randomUUID().toString(),
+            currentRoleName = "",
+            currentSubject = "",
+            currentBody = "",
+            currentResumeName = "",
+            currentResumeText = ""
         )
+    }
+
+    fun editRole(role: JobRole) {
+        _uiState.value = _uiState.value.copy(
+            currentRoleId = role.id,
+            currentRoleName = role.roleName,
+            currentSubject = role.subject,
+            currentBody = role.body,
+            currentResumeName = role.resumeFileName,
+            currentResumeText = role.resumeText
+        )
+    }
+
+    fun deleteRole(roleId: String) {
+        val updatedRoles = _uiState.value.roles.filter { it.id != roleId }
+        _uiState.value = _uiState.value.copy(roles = updatedRoles)
+        saveProfile()
+    }
+
+    fun saveCurrentRole() {
+        val state = _uiState.value
+        if (state.currentRoleName.isBlank()) {
+            _uiState.value = state.copy(message = "Please enter a role name")
+            return
+        }
+
+        val newRole = JobRole(
+            id = state.currentRoleId ?: UUID.randomUUID().toString(),
+            roleName = state.currentRoleName,
+            subject = state.currentSubject,
+            body = state.currentBody,
+            resumeFileName = state.currentResumeName,
+            resumeText = state.currentResumeText
+        )
+
+        val updatedRoles = state.roles.toMutableList()
+        val index = updatedRoles.indexOfFirst { it.id == newRole.id }
+        if (index != -1) {
+            updatedRoles[index] = newRole
+        } else {
+            updatedRoles.add(newRole)
+        }
+
+        _uiState.value = state.copy(
+            roles = updatedRoles,
+            currentRoleId = null, // Close editor
+            message = "Role saved"
+        )
+        saveProfile()
+    }
+
+    fun cancelEdit() {
+        _uiState.value = _uiState.value.copy(currentRoleId = null)
+    }
+
+    private fun saveProfile() {
+        val state = _uiState.value
+        val profile = Profile(state.name, state.roles)
         saveProfileUseCase(profile)
-        _uiState.value = _uiState.value.copy(isProfileSaved = true, message = "Profile saved successfully")
     }
 
     fun clearMessage() {

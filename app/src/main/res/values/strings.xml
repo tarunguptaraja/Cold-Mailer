@@ -27,6 +27,7 @@
     <string name="btn_send_email">Send Email with Resume</string>
     <string name="msg_screenshot_selected">Screenshot selected</string>
     <string name="err_invalid_email">Invalid Email</string>
+    <string name="err_enter_email">Please enter recipient email</string>
     <string name="err_no_pdf">No PDF found</string>
     <string name="err_no_profile">No Profile Data Found</string>
 

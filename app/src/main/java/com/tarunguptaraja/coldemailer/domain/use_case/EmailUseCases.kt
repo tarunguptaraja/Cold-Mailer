@@ -9,9 +9,9 @@ import javax.inject.Inject
 class AnalyzeJobUseCase @Inject constructor(
     private val repository: EmailRepository
 ) {
-    suspend operator fun invoke(jdInput: Any, resumeText: String, profile: Profile): JobAnalysis? {
+    suspend operator fun invoke(jdInput: Any, resumeText: String, profile: Profile, tone: String = "Professional"): JobAnalysis? {
         Log.d("AnalyzeJobUseCase", "Invoking analysis")
-        return repository.analyzeJob(jdInput, resumeText, profile)
+        return repository.analyzeJob(jdInput, resumeText, profile, tone)
     }
 }
 
@@ -30,7 +30,13 @@ class DeleteHistoryUseCase @Inject constructor(
 class AddHistoryUseCase @Inject constructor(
     private val repository: EmailRepository
 ) {
-    operator fun invoke(email: String, subject: String, dateSent: Long, body: String, followUp: String) {
-        repository.addHistory(email, subject, dateSent, body, followUp)
+    operator fun invoke(email: String, subject: String, dateSent: Long, body: String, followUp: String, companyName: String, roleName: String, status: String = "Applied") {
+        repository.addHistory(email, subject, dateSent, body, followUp, companyName, roleName, status)
     }
+}
+
+class UpdateHistoryStatusUseCase @Inject constructor(
+    private val repository: EmailRepository
+) {
+    operator fun invoke(id: Long, newStatus: String) = repository.updateHistoryStatus(id, newStatus)
 }

@@ -1,9 +1,10 @@
 package com.tarunguptaraja.coldemailer.domain.model
 
+import com.tarunguptaraja.coldemailer.domain.model.JobRole
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Profile(
     val name: String,
-    val subject: String,
-    val body: String,
-    val resumeName: String,
-    val resumeText: String
+    val roles: List<JobRole> = emptyList()
 )

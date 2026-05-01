@@ -29,6 +29,11 @@ class HistoryAdapter(
         val emailHistory = getItem(position)
         holder.binding.tvEmail.text = emailHistory.email
         holder.binding.tvSubject.text = emailHistory.subject
+        
+        val company = emailHistory.companyName.ifEmpty { "Unknown Company" }
+        val role = emailHistory.roleName.ifEmpty { "Unknown Role" }
+        holder.binding.tvCompanyRole.text = "$company - $role"
+        holder.binding.tvStatus.text = emailHistory.status
 
         val date = Date(emailHistory.dateSent)
         val format = SimpleDateFormat("MMM dd, yyyy · hh:mm a", Locale.getDefault())

@@ -8,5 +8,8 @@ data class JobAnalysis(
     val company: String? = null,
     val role: String? = null,
     val initialBody: String,
-    val followUpBody: String
+    val followUpBody: String,
+    val subject: String? = null,
+    val atsScore: Int? = null,
+    val atsFeedback: List<String>? = null
 )

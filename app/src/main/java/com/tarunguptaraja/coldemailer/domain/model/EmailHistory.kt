@@ -6,5 +6,8 @@ data class EmailHistory(
     val subject: String,
     val dateSent: Long,
     val body: String = "",
-    val followUp: String = ""
+    val followUp: String = "",
+    val companyName: String = "",
+    val roleName: String = "",
+    val status: String = "Applied" // Applied, Followed_Up, Interviewing, Rejected, Offer
 )

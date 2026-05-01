@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorSurface">
@@ -122,8 +123,9 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:hint="@string/hint_jd_text"
+                            android:hint="Paste JD URL or Text"
                             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                            app:hintEnabled="true"
                             app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
                             app:boxCornerRadiusBottomStart="@dimen/_8sdp"
                             app:boxCornerRadiusTopEnd="@dimen/_8sdp"
@@ -134,8 +136,8 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/montserrat"
-                                android:paddingTop="@dimen/_10sdp"
-                                android:paddingBottom="@dimen/_10sdp"
+                                android:paddingTop="@dimen/_12sdp"
+                                android:paddingBottom="@dimen/_12sdp"
                                 android:inputType="textMultiLine"
                                 android:lines="3"
                                 android:gravity="top|start"
@@ -155,13 +157,43 @@
                                 android:id="@+id/btn_screenshot"
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
-                                android:padding="@dimen/_12sdp"
                                 android:scaleType="centerInside"
                                 android:src="@android:drawable/ic_menu_camera"
-                                app:tint="@color/colorTextSecondary"
                                 android:background="?attr/selectableItemBackground" />
                         </com.google.android.material.card.MaterialCardView>
                     </LinearLayout>
+
+                    <!-- Role Dropdown -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_12sdp"
+                        android:hint="Select Your Role Profile">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/spinner_role"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none"
+                            android:text="Default Role" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Tone Dropdown -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_8sdp"
+                        android:hint="Email Tone">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/spinner_tone"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none"
+                            android:text="Professional" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_analyze"
@@ -174,7 +206,6 @@
                         android:textSize="@dimen/_13sdp"
                         app:cornerRadius="@dimen/_8sdp"
                         app:backgroundTint="@color/colorAccent" />
-                    
 
                     <com.google.android.material.progressindicator.LinearProgressIndicator
                         android:id="@+id/progress_analysis"
@@ -186,6 +217,77 @@
                         android:indeterminate="true"
                         android:visibility="invisible" />
 
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ATS Match Score Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_ats_score"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="@dimen/_12sdp"
+                app:cardElevation="@dimen/_2sdp"
+                app:strokeWidth="0dp"
+                android:layout_marginBottom="@dimen/_16sdp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_16sdp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="ATS Match Analysis"
+                        android:textColor="@color/colorTextPrimary"
+                        android:textSize="@dimen/_15sdp"
+                        android:layout_marginBottom="@dimen/_12sdp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <FrameLayout
+                            android:layout_width="@dimen/_60sdp"
+                            android:layout_height="@dimen/_60sdp">
+                            
+                            <com.google.android.material.progressindicator.CircularProgressIndicator
+                                android:id="@+id/ats_progress"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                app:indicatorSize="@dimen/_56sdp"
+                                app:trackThickness="@dimen/_6sdp"
+                                app:indicatorColor="@color/colorPrimary"
+                                android:max="100"
+                                android:progress="0" />
+
+                            <TextView
+                                android:id="@+id/tv_ats_score"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:fontFamily="@font/montserrat_bold"
+                                android:text="0%"
+                                android:textColor="@color/colorPrimary"
+                                android:textSize="@dimen/_14sdp"/>
+                        </FrameLayout>
+
+                        <TextView
+                            android:id="@+id/tv_ats_feedback"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="@dimen/_16sdp"
+                            android:fontFamily="@font/montserrat"
+                            android:text="Feedback will appear here."
+                            android:textColor="@color/colorTextSecondary"
+                            android:textSize="@dimen/_12sdp"/>
+                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -207,7 +309,7 @@
                 app:boxCornerRadiusBottomStart="@dimen/_8sdp"
                 app:boxCornerRadiusTopEnd="@dimen/_8sdp"
                 app:boxCornerRadiusTopStart="@dimen/_8sdp"
-                android:layout_marginBottom="@dimen/_16sdp">
+                android:layout_marginBottom="@dimen/_12sdp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_email"
@@ -219,12 +321,59 @@
                     android:paddingBottom="@dimen/_12sdp"
                     android:textSize="@dimen/_13sdp" />
             </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Generated Email Subject -->
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_12sdp"
+                android:hint="Email Subject"
+                app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
+                app:boxCornerRadiusBottomStart="@dimen/_8sdp"
+                app:boxCornerRadiusTopEnd="@dimen/_8sdp"
+                app:boxCornerRadiusTopStart="@dimen/_8sdp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_subject"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:inputType="text"
+                    android:paddingTop="@dimen/_12sdp"
+                    android:paddingBottom="@dimen/_12sdp"
+                    android:textSize="@dimen/_13sdp" />
+            </com.google.android.material.textfield.TextInputLayout>
             
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Generated Email Body"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
+                app:boxCornerRadiusBottomStart="@dimen/_8sdp"
+                app:boxCornerRadiusTopEnd="@dimen/_8sdp"
+                app:boxCornerRadiusTopStart="@dimen/_8sdp"
+                android:layout_marginBottom="@dimen/_16sdp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_email_body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat"
+                    android:inputType="textMultiLine"
+                    android:lines="8"
+                    android:gravity="top|start"
+                    android:paddingTop="@dimen/_12sdp"
+                    android:paddingBottom="@dimen/_12sdp"
+                    android:textSize="@dimen/_13sdp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/montserrat"
-                android:text="@string/msg_automation_info"
+                android:text="Clicking Send will open Gmail with your role-specific resume attached and the email draft ready for your review."
                 android:textColor="@color/colorTextSecondary"
                 android:textSize="@dimen/_12sdp"/>
 

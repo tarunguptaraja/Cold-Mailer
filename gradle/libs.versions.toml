@@ -23,6 +23,7 @@ pdfboxAndroid = "2.0.27.0"
 sdpAndroid = "1.1.1"
 secrets = "2.0.1"
 kotlinxSerializationJson = "1.7.3"
+jsoup = "1.17.2"
 
 
 [libraries]
@@ -49,6 +50,7 @@ pdfbox-android = { module = "com.tom-roush:pdfbox-android", version.ref = "pdfbo
 sdp-android = { module = "com.intuit.sdp:sdp-android", version.ref = "sdpAndroid" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

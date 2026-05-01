@@ -1,6 +1,8 @@
 package com.tarunguptaraja.coldemailer
 
 import android.content.Intent
+import com.tarunguptaraja.coldemailer.R
+
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
@@ -71,16 +73,25 @@ class HistoryActivity : AppCompatActivity() {
     }
     
     private fun showOptionsDialog(historyItem: EmailHistory) {
-        val options = arrayOf(getString(R.string.opt_send_followup), getString(R.string.opt_delete))
+        val options = arrayOf("Update Status", getString(R.string.opt_send_followup), getString(R.string.opt_delete))
         AlertDialog.Builder(this)
             .setTitle(historyItem.email)
             .setItems(options) { _, which ->
                 when (which) {
-                    0 -> sendFollowUp(historyItem)
-                    1 -> {
-                        viewModel.deleteHistory(historyItem.id)
-                    }
+                    0 -> showStatusDialog(historyItem)
+                    1 -> sendFollowUp(historyItem)
+                    2 -> viewModel.deleteHistory(historyItem.id)
                 }
+            }
+            .show()
+    }
+
+    private fun showStatusDialog(historyItem: EmailHistory) {
+        val statuses = arrayOf("Applied", "Followed_Up", "Interviewing", "Rejected", "Offer")
+        AlertDialog.Builder(this)
+            .setTitle("Update Status")
+            .setItems(statuses) { _, which ->
+                viewModel.updateStatus(historyItem.id, statuses[which])
             }
             .show()
     }

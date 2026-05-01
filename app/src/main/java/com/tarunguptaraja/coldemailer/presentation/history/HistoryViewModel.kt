@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+import com.tarunguptaraja.coldemailer.domain.use_case.UpdateHistoryStatusUseCase
+
 data class HistoryUiState(
     val historyList: List<EmailHistory> = emptyList(),
     val isLoading: Boolean = false
@@ -20,7 +22,8 @@ data class HistoryUiState(
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
     private val getHistoryUseCase: GetHistoryUseCase,
-    private val deleteHistoryUseCase: DeleteHistoryUseCase
+    private val deleteHistoryUseCase: DeleteHistoryUseCase,
+    private val updateHistoryStatusUseCase: UpdateHistoryStatusUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HistoryUiState())
@@ -41,6 +44,13 @@ class HistoryViewModel @Inject constructor(
     fun deleteHistory(id: Long) {
         viewModelScope.launch {
             deleteHistoryUseCase(id)
+            loadHistory()
+        }
+    }
+
+    fun updateStatus(id: Long, status: String) {
+        viewModelScope.launch {
+            updateHistoryStatusUseCase(id, status)
             loadHistory()
         }
     }

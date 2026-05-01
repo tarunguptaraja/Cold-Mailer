@@ -1,9 +1,14 @@
 package com.tarunguptaraja.coldemailer
 
 import android.content.Intent
+import com.tarunguptaraja.coldemailer.R
+
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
+import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,6 +22,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.tarunguptaraja.coldemailer.databinding.ActivitySendEmailBinding
+import com.tarunguptaraja.coldemailer.domain.model.JobRole
 import com.tarunguptaraja.coldemailer.domain.model.Profile
 import com.tarunguptaraja.coldemailer.presentation.send.SendMailViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,38 +53,46 @@ class SendMailActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivitySendEmailBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
+        setupToneSpinner()
         setupListeners()
         observeState()
     }
 
+    private fun setupToneSpinner() {
+        val tones = arrayOf("Professional", "Enthusiastic", "Casual", "Direct", "Creative")
+        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, tones)
+        binding.spinnerTone.setAdapter(adapter)
+    }
+
     private fun setupListeners() {
-        binding.etJdText.doAfterTextChanged { viewModel.onJdTextChanged(it.toString()) }
+        binding.etJdText.etJdTextChanged { viewModel.onJdTextChanged(it.toString()) }
 
         binding.sendEmail.setOnClickListener {
             val emailText = binding.etEmail.text.toString()
-            if (emailText.isEmpty() || !emailText.contains("@")) {
-                Toast.makeText(this, getString(R.string.err_invalid_email), Toast.LENGTH_SHORT).show()
+            if (emailText.isEmpty()) {
+                Toast.makeText(this, getString(R.string.err_enter_email), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             val state = viewModel.uiState.value
-            state.profile?.let {
-                val pdfFile = getLatestPdf(it)
+            val role = state.selectedRole ?: state.roles.firstOrNull()
+            state.profile?.let { profile ->
+                val pdfFile = role?.resumeFileName?.let { getLatestPdf(it) }
                 if (pdfFile != null) {
-                    val bodyToSend = state.modifiedBody ?: it.body
-                    sendPdfInGmail(pdfFile, it.copy(body = bodyToSend))
+                    val subjectToSend = binding.etSubject.text.toString().ifEmpty { state.modifiedSubject ?: role?.subject ?: "" }
+                    val bodyToSend = binding.etEmailBody.text.toString().ifEmpty { state.modifiedBody ?: role?.body ?: "" }
+                    sendPdfInGmail(pdfFile, profile.copy(name = profile.name), subjectToSend, bodyToSend)
                     viewModel.saveSentHistory(emailText)
                 } else {
-                    Toast.makeText(this, getString(R.string.err_no_pdf), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "No resume found for this role", Toast.LENGTH_SHORT).show()
                 }
-            } ?: run {
-                Toast.makeText(this, getString(R.string.err_no_profile), Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -95,7 +109,8 @@ class SendMailActivity : AppCompatActivity() {
         }
 
         binding.btnAnalyze.setOnClickListener {
-            viewModel.analyzeJob()
+            val tone = binding.spinnerTone.text.toString()
+            viewModel.analyzeJob(tone)
         }
     }
 
@@ -103,55 +118,89 @@ class SendMailActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
-                    binding.btnAnalyze.text =
-                        if (state.isAnalyzing) getString(R.string.btn_analyzing) else getString(R.string.btn_analyze_ai)
+                    binding.progressAnalysis.visibility = if (state.isAnalyzing) View.VISIBLE else View.INVISIBLE
                     binding.btnAnalyze.isEnabled = !state.isAnalyzing
-                    binding.progressAnalysis.visibility =
-                        if (state.isAnalyzing) android.view.View.VISIBLE else android.view.View.INVISIBLE
 
+                    // Role Dropdown
+                    if (state.roles.isNotEmpty()) {
+                        val roleNames = state.roles.map { it.roleName }
+                        val adapter = ArrayAdapter(this@SendMailActivity, android.R.layout.simple_dropdown_item_1line, roleNames)
+                        binding.spinnerRole.setAdapter(adapter)
+                        
+                        if (binding.spinnerRole.text.isNullOrEmpty() || !roleNames.contains(binding.spinnerRole.text.toString())) {
+                            val defaultRole = state.selectedRole ?: state.roles.first()
+                            binding.spinnerRole.setText(defaultRole.roleName, false)
+                        }
+                    }
+
+                    binding.spinnerRole.setOnItemClickListener { _, _, position, _ ->
+                        viewModel.onRoleSelected(state.roles[position])
+                    }
+
+                    // JD Text Sync
+                    if (state.jdText != binding.etJdText.text.toString() && !state.isAnalyzing) {
+                        binding.etJdText.setText(state.jdText)
+                    }
+
+                    // Email Data
                     if (state.emails.isNotEmpty() && binding.etEmail.text.isNullOrEmpty()) {
                         binding.etEmail.setText(state.emails)
                     }
+                    if (state.modifiedSubject != null && binding.etSubject.text.isNullOrEmpty()) {
+                        binding.etSubject.setText(state.modifiedSubject)
+                    }
+                    if (state.modifiedBody != null && binding.etEmailBody.text.isNullOrEmpty()) {
+                        binding.etEmailBody.setText(state.modifiedBody)
+                    }
+
+                    // ATS Results
+                    if (state.atsScore != null) {
+                        binding.cardAtsScore.visibility = View.VISIBLE
+                        binding.atsProgress.progress = state.atsScore
+                        binding.tvAtsScore.text = "${state.atsScore}%"
+                        binding.tvAtsFeedback.text = state.atsFeedback?.joinToString("\n• ", prefix = "• ")
+                    }
 
                     state.analysisError?.let {
-                        Toast.makeText(this@SendMailActivity, it, Toast.LENGTH_SHORT).show()
-                        viewModel.clearError()
+                        Toast.makeText(this@SendMailActivity, it, Toast.LENGTH_LONG).show()
                     }
                 }
             }
         }
     }
 
-    private fun getLatestPdf(profile: Profile): File? {
+    private fun getLatestPdf(fileName: String): File? {
         val pdfDir = File(getExternalFilesDir(null), "pdfs")
-        if (!pdfDir.exists()) return null
-
-        return pdfDir.listFiles()?.filter {
-            it.extension.equals("pdf", true) && it.name.contains(profile.resumeName)
-        }?.maxByOrNull { it.lastModified() }
+        val file = File(pdfDir, fileName)
+        return if (file.exists()) file else null
     }
 
-    private fun sendPdfInGmail(file: File, profile: Profile) {
-        val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
-
+    private fun sendPdfInGmail(pdfFile: File, profile: Profile, subject: String, body: String) {
+        val uri: Uri = FileProvider.getUriForFile(this, "${packageName}.fileprovider", pdfFile)
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "application/pdf"
-            val emailText = binding.etEmail.text.toString()
-            val emails = emailText.split(Regex("[,;]")).map { it.trim() }.filter { it.isNotEmpty() }
-                .toTypedArray()
-            putExtra(Intent.EXTRA_EMAIL, emails)
-            putExtra(Intent.EXTRA_SUBJECT, profile.subject)
-            putExtra(Intent.EXTRA_TEXT, profile.body)
+            putExtra(Intent.EXTRA_EMAIL, arrayOf(binding.etEmail.text.toString()))
+            putExtra(Intent.EXTRA_SUBJECT, subject)
+            putExtra(Intent.EXTRA_TEXT, body)
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            setPackage("com.google.android.gm")
         }
 
         try {
-            val gmailIntent = Intent(intent)
-            gmailIntent.setPackage("com.google.android.gm")
-            startActivity(gmailIntent)
-        } catch (e: android.content.ActivityNotFoundException) {
-            startActivity(Intent.createChooser(intent, getString(R.string.btn_send_email)))
+            startActivity(intent)
+        } catch (e: Exception) {
+            intent.setPackage(null)
+            startActivity(Intent.createChooser(intent, "Send Email"))
         }
     }
+}
+
+// Extension to avoid infinite loop
+fun android.widget.EditText.etJdTextChanged(after: (android.text.Editable?) -> Unit) {
+    this.addTextChangedListener(object : android.text.TextWatcher {
+        override fun afterTextChanged(s: android.text.Editable?) { after(s) }
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+    })
 }

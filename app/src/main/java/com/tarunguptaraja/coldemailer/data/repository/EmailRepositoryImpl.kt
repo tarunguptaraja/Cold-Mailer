@@ -15,12 +15,12 @@ class EmailRepositoryImpl @Inject constructor(
     private val geminiManager: GeminiManager
 ) : EmailRepository {
 
-    override suspend fun analyzeJob(jdInput: Any, resumeText: String, profile: Profile): JobAnalysis? {
-        return geminiManager.analyzeJD(jdInput, resumeText, profile)
+    override suspend fun analyzeJob(jdInput: Any, resumeText: String, profile: Profile, tone: String): JobAnalysis? {
+        return geminiManager.analyzeJD(jdInput, resumeText, profile, tone)
     }
 
-    override fun addHistory(email: String, subject: String, dateSent: Long, body: String, followUp: String): Long {
-        return dbHelper.addHistory(email, subject, dateSent, body, followUp)
+    override fun addHistory(email: String, subject: String, dateSent: Long, body: String, followUp: String, companyName: String, roleName: String, status: String): Long {
+        return dbHelper.addHistory(email, subject, dateSent, body, followUp, companyName, roleName, status)
     }
 
     override fun getAllHistory(): List<EmailHistory> {
@@ -29,5 +29,9 @@ class EmailRepositoryImpl @Inject constructor(
 
     override fun deleteHistory(id: Long) {
         dbHelper.deleteHistory(id)
+    }
+
+    override fun updateHistoryStatus(id: Long, newStatus: String) {
+        dbHelper.updateHistoryStatus(id, newStatus)
     }
 }
