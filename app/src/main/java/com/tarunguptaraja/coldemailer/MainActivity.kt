@@ -18,6 +18,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.tarunguptaraja.coldemailer.databinding.ActivityMainBinding
 import com.tarunguptaraja.coldemailer.databinding.ItemJobRoleBinding
 import com.tarunguptaraja.coldemailer.domain.model.JobRole
+import com.tarunguptaraja.coldemailer.presentation.ats.AtsScorerActivity
 import com.tarunguptaraja.coldemailer.presentation.profile.ProfileViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -70,6 +71,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnBack.setOnClickListener { finish() }
+
+        binding.btnAts.setOnClickListener {
+            startActivity(Intent(this, AtsScorerActivity::class.java))
+        }
 
         binding.tvSave.setOnClickListener {
             if (viewModel.uiState.value.roles.isEmpty()) {

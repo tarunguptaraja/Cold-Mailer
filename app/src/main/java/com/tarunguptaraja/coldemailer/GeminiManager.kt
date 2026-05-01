@@ -5,6 +5,7 @@ import android.util.Log
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.tarunguptaraja.coldemailer.domain.model.AtsReport
 import com.tarunguptaraja.coldemailer.domain.model.JobAnalysis
 import com.tarunguptaraja.coldemailer.domain.model.Profile
 import kotlinx.coroutines.Dispatchers
@@ -114,6 +115,91 @@ class GeminiManager @Inject constructor(
             }
         } catch (e: Exception) {
             Log.e("GeminiManager", "Error analyzing JD: ${e.message}", e)
+            crashlytics.recordException(e)
+            null
+        }
+    }
+
+    suspend fun calculateAtsScore(
+        jobProfile: String,
+        experience: String,
+        resumeText: String
+    ): AtsReport? = withContext(Dispatchers.IO) {
+        try {
+            val prompt = """
+                You are an expert HR Manager and ATS algorithm. Analyze the following resume text against the target job profile and experience level.
+                
+                Target Job Profile: $jobProfile
+                Target Years of Experience: $experience
+                
+                Resume Text:
+                $resumeText
+                
+                Your task:
+                1. Calculate an ATS score (0-100) based on keyword matching, experience relevance, and skill alignment.
+                2. Provide a brief summary of why this score was given.
+                3. Identify 2-3 specific strengths of the resume for this role.
+                4. Identify 2-3 weaknesses or gaps.
+                5. List missing keywords that are crucial for this role but not in the resume.
+                6. Provide 2-3 actionable tips to improve the resume for this specific profile.
+                
+                IMPORTANT FORMATTING RULES:
+                - Return ONLY a valid JSON object.
+                - JSON keys: "score" (number), "summary" (string), "strengths" (array of strings), "weaknesses" (array of strings), "missingKeywords" (array of strings), "improvementTips" (array of strings).
+                - Use \n for newlines in the strings.
+            """.trimIndent()
+
+            val content = content {
+                text(prompt)
+            }
+
+            val response = generativeModel.generateContent(content)
+            val responseText = response.text ?: ""
+            Log.d("GeminiManager", "ATS Score Response: $responseText")
+
+            val jsonRegex = Regex("\\{.*\\}", RegexOption.DOT_MATCHES_ALL)
+            val jsonMatch = jsonRegex.find(responseText)?.value
+            
+            if (jsonMatch != null) {
+                val jsonObject = JSONObject(jsonMatch)
+                
+                val strengths = mutableListOf<String>()
+                val strengthsArray = jsonObject.optJSONArray("strengths")
+                strengthsArray?.let { 
+                    for (i in 0 until it.length()) strengths.add(it.getString(i))
+                }
+
+                val weaknesses = mutableListOf<String>()
+                val weaknessesArray = jsonObject.optJSONArray("weaknesses")
+                weaknessesArray?.let {
+                    for (i in 0 until it.length()) weaknesses.add(it.getString(i))
+                }
+
+                val missingKeywords = mutableListOf<String>()
+                val missingKeywordsArray = jsonObject.optJSONArray("missingKeywords")
+                missingKeywordsArray?.let {
+                    for (i in 0 until it.length()) missingKeywords.add(it.getString(i))
+                }
+
+                val improvementTips = mutableListOf<String>()
+                val improvementTipsArray = jsonObject.optJSONArray("improvementTips")
+                improvementTipsArray?.let {
+                    for (i in 0 until it.length()) improvementTips.add(it.getString(i))
+                }
+
+                AtsReport(
+                    score = jsonObject.optInt("score"),
+                    summary = jsonObject.optString("summary"),
+                    strengths = strengths,
+                    weaknesses = weaknesses,
+                    missingKeywords = missingKeywords,
+                    improvementTips = improvementTips
+                )
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("GeminiManager", "Error calculating ATS score: ${e.message}", e)
             crashlytics.recordException(e)
             null
         }
