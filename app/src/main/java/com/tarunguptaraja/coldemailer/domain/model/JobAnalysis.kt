@@ -11,5 +11,6 @@ data class JobAnalysis(
     val followUpBody: String,
     val subject: String? = null,
     val atsScore: Int? = null,
-    val atsFeedback: List<String>? = null
+    val atsFeedback: List<String>? = null,
+    val tokensUsed: Int = 0
 )

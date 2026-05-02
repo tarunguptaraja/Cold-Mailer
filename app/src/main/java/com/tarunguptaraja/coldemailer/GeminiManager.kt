@@ -74,7 +74,8 @@ class GeminiManager @Inject constructor(
 
             val response = generativeModel.generateContent(content)
             val responseText = response.text ?: ""
-            Log.d("GeminiManager", "Response received: $responseText")
+            val tokensUsed = response.usageMetadata?.totalTokenCount ?: 0
+            Log.d("GeminiManager", "Response received ($tokensUsed tokens): $responseText")
 
             // Extract JSON from the response text
             val jsonRegex = Regex("\\{.*\\}", RegexOption.DOT_MATCHES_ALL)
@@ -107,7 +108,8 @@ class GeminiManager @Inject constructor(
                     atsFeedback = feedback,
                     subject = jsonObject.optString("subject"),
                     initialBody = jsonObject.optString("initialBody"),
-                    followUpBody = jsonObject.optString("followUpBody")
+                    followUpBody = jsonObject.optString("followUpBody"),
+                    tokensUsed = tokensUsed
                 )
             } else {
                 Log.e("GeminiManager", "No JSON found in response")
@@ -155,7 +157,8 @@ class GeminiManager @Inject constructor(
 
             val response = generativeModel.generateContent(content)
             val responseText = response.text ?: ""
-            Log.d("GeminiManager", "ATS Score Response: $responseText")
+            val tokensUsed = response.usageMetadata?.totalTokenCount ?: 0
+            Log.d("GeminiManager", "ATS Score Response ($tokensUsed tokens): $responseText")
 
             val jsonRegex = Regex("\\{.*\\}", RegexOption.DOT_MATCHES_ALL)
             val jsonMatch = jsonRegex.find(responseText)?.value
@@ -193,7 +196,8 @@ class GeminiManager @Inject constructor(
                     strengths = strengths,
                     weaknesses = weaknesses,
                     missingKeywords = missingKeywords,
-                    improvementTips = improvementTips
+                    improvementTips = improvementTips,
+                    tokensUsed = tokensUsed
                 )
             } else {
                 null

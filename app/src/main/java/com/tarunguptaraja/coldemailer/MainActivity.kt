@@ -111,6 +111,7 @@ class MainActivity : AppCompatActivity() {
                         binding.tvResume.text = if (state.currentResumeName.isEmpty()) "No Resume Selected" else state.currentResumeName
                     }
 
+                    binding.tvTokens.text = "${state.remainingTokens} Tokens"
                     binding.progressLoading.visibility = if (state.isLoading) View.VISIBLE else View.GONE
                     
                     state.message?.let {

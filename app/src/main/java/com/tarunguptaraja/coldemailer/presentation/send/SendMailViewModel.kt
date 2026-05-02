@@ -10,6 +10,7 @@ import com.tarunguptaraja.coldemailer.domain.use_case.AddHistoryUseCase
 import com.tarunguptaraja.coldemailer.domain.use_case.AnalyzeJobUseCase
 import com.tarunguptaraja.coldemailer.domain.use_case.GetProfileUseCase
 import com.tarunguptaraja.coldemailer.domain.use_case.ScrapeUrlUseCase
+import com.tarunguptaraja.coldemailer.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,7 +41,8 @@ class SendMailViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val analyzeJobUseCase: AnalyzeJobUseCase,
     private val addHistoryUseCase: AddHistoryUseCase,
-    private val scrapeUrlUseCase: ScrapeUrlUseCase
+    private val scrapeUrlUseCase: ScrapeUrlUseCase,
+    private val tokenManager: TokenManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SendMailUiState())
@@ -105,6 +107,14 @@ class SendMailViewModel @Inject constructor(
             isAnalyzing = true, 
             analysisError = null
         )
+        
+        if (!tokenManager.hasSufficientTokens()) {
+            _uiState.value = _uiState.value.copy(
+                isAnalyzing = false,
+                analysisError = "AI Credits exhausted (100k limit). Please contact support."
+            )
+            return
+        }
 
         val state = _uiState.value
         val profile = state.profile ?: run {
@@ -139,6 +149,7 @@ class SendMailViewModel @Inject constructor(
                     atsScore = result.atsScore,
                     atsFeedback = result.atsFeedback
                 )
+                tokenManager.deductTokens(result.tokensUsed)
             } else {
                 _uiState.value = _uiState.value.copy(
                     isAnalyzing = false,

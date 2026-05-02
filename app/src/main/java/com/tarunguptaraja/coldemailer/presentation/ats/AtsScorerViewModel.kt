@@ -7,6 +7,7 @@ import com.tarunguptaraja.coldemailer.GeminiManager
 import com.tarunguptaraja.coldemailer.ProfilePreferenceManager
 import com.tarunguptaraja.coldemailer.ResumeParser
 import com.tarunguptaraja.coldemailer.domain.model.AtsReport
+import com.tarunguptaraja.coldemailer.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,7 +30,8 @@ data class AtsScorerUiState(
 class AtsScorerViewModel @Inject constructor(
     private val geminiManager: GeminiManager,
     private val resumeParser: ResumeParser,
-    private val profilePreferenceManager: ProfilePreferenceManager
+    private val profilePreferenceManager: ProfilePreferenceManager,
+    private val tokenManager: TokenManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AtsScorerUiState())
@@ -77,6 +79,10 @@ class AtsScorerViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            if (!tokenManager.hasSufficientTokens()) {
+                _uiState.value = _uiState.value.copy(error = "AI Credits exhausted (100k limit). Please contact support.")
+                return@launch
+            }
             _uiState.value = _uiState.value.copy(isLoading = true, error = null, atsReport = null)
             val report = geminiManager.calculateAtsScore(
                 jobProfile = state.jobProfile,
@@ -86,6 +92,7 @@ class AtsScorerViewModel @Inject constructor(
             
             if (report != null) {
                 _uiState.value = _uiState.value.copy(atsReport = report, isLoading = false)
+                tokenManager.deductTokens(report.tokensUsed)
             } else {
                 _uiState.value = _uiState.value.copy(isLoading = false, error = "Failed to calculate ATS score. Please try again.")
             }

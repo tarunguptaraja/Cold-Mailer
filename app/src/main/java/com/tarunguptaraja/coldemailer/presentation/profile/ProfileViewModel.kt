@@ -3,6 +3,7 @@ package com.tarunguptaraja.coldemailer.presentation.profile
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tarunguptaraja.coldemailer.TokenManager
 import com.tarunguptaraja.coldemailer.domain.model.JobRole
 import com.tarunguptaraja.coldemailer.domain.model.Profile
 import com.tarunguptaraja.coldemailer.domain.use_case.ExtractResumeTextUseCase
@@ -19,24 +20,24 @@ import javax.inject.Inject
 data class ProfileUiState(
     val name: String = "",
     val roles: List<JobRole> = emptyList(),
-    // Current Role being edited
     val currentRoleId: String? = null,
     val currentRoleName: String = "",
     val currentSubject: String = "",
     val currentBody: String = "",
     val currentResumeName: String = "",
     val currentResumeText: String = "",
-    
     val isLoading: Boolean = false,
     val message: String? = null,
-    val isProfileSaved: Boolean = false
+    val isProfileSaved: Boolean = false,
+    val remainingTokens: Long = 100000L
 )
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val saveProfileUseCase: SaveProfileUseCase,
-    private val extractResumeTextUseCase: ExtractResumeTextUseCase
+    private val extractResumeTextUseCase: ExtractResumeTextUseCase,
+    private val tokenManager: TokenManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -44,6 +45,15 @@ class ProfileViewModel @Inject constructor(
 
     init {
         loadProfile()
+        observeTokens()
+    }
+
+    private fun observeTokens() {
+        viewModelScope.launch {
+            tokenManager.tokens.collect { tokens ->
+                _uiState.value = _uiState.value.copy(remainingTokens = tokens)
+            }
+        }
     }
 
     private fun loadProfile() {
@@ -51,9 +61,18 @@ class ProfileViewModel @Inject constructor(
         profile?.let {
             _uiState.value = _uiState.value.copy(
                 name = it.name,
-                roles = it.roles
+                roles = it.roles,
+                remainingTokens = tokenManager.getRemainingTokens()
+            )
+        } ?: run {
+            _uiState.value = _uiState.value.copy(
+                remainingTokens = tokenManager.getRemainingTokens()
             )
         }
+    }
+
+    fun refreshTokens() {
+        // Now handled by observeTokens()
     }
 
     fun onNameChanged(name: String) {
@@ -137,9 +156,7 @@ class ProfileViewModel @Inject constructor(
         }
 
         _uiState.value = state.copy(
-            roles = updatedRoles,
-            currentRoleId = null, // Close editor
-            message = "Role saved"
+            roles = updatedRoles, currentRoleId = null, message = "Role saved"
         )
         saveProfile()
     }
