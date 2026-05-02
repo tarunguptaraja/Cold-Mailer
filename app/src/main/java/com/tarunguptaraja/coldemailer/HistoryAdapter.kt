@@ -3,6 +3,7 @@ package com.tarunguptaraja.coldemailer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -18,7 +19,8 @@ class HistoryAdapter(
     private val onFollowUpClick: (EmailHistory) -> Unit
 ) : ListAdapter<EmailHistory, HistoryAdapter.HistoryViewHolder>(HistoryDiffCallback()) {
 
-    inner class HistoryViewHolder(val binding: ItemHistoryBinding) : RecyclerView.ViewHolder(binding.root)
+    inner class HistoryViewHolder(val binding: ItemHistoryBinding) :
+        RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryViewHolder {
         val binding = ItemHistoryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -29,7 +31,7 @@ class HistoryAdapter(
         val emailHistory = getItem(position)
         holder.binding.tvEmail.text = emailHistory.email
         holder.binding.tvSubject.text = emailHistory.subject
-        
+
         val company = emailHistory.companyName.ifEmpty { "Unknown Company" }
         val role = emailHistory.roleName.ifEmpty { "Unknown Role" }
         holder.binding.tvCompanyRole.text = "$company - $role"
@@ -42,18 +44,37 @@ class HistoryAdapter(
         val diffInMillis = System.currentTimeMillis() - emailHistory.dateSent
         val diffInDays = TimeUnit.MILLISECONDS.toDays(diffInMillis)
 
-        if (diffInDays >= 7) {
+        if (emailHistory.status == "Applied") {
             holder.binding.tvFollowUp.visibility = View.VISIBLE
+            if (diffInDays >= 3) {
+                holder.binding.tvFollowUpText.text = "Follow Up Due!"
+                holder.binding.tvFollowUpText.setTextColor(
+                    ContextCompat.getColor(
+                        holder.itemView.context,
+                        R.color.colorWarningText
+                    )
+                )
+                holder.binding.tvFollowUp.setOnClickListener {
+                    onFollowUpClick(emailHistory)
+                }
+            } else {
+                val daysLeft = 3 - diffInDays
+                holder.binding.tvFollowUpText.text = "Follow up in $daysLeft days"
+                holder.binding.tvFollowUpText.setTextColor(
+                    ContextCompat.getColor(
+                        holder.itemView.context,
+                        R.color.colorTextSecondary
+                    )
+                )
+                holder.binding.tvFollowUp.setOnClickListener(null)
+            }
         } else {
             holder.binding.tvFollowUp.visibility = View.GONE
+            holder.binding.tvFollowUp.setOnClickListener(null)
         }
 
         holder.itemView.setOnClickListener {
             onItemClick(emailHistory)
-        }
-        
-        holder.binding.tvFollowUp.setOnClickListener {
-            onFollowUpClick(emailHistory)
         }
     }
 

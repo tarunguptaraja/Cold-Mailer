@@ -19,6 +19,7 @@ import javax.inject.Inject
 
 data class ProfileUiState(
     val name: String = "",
+    val contactNumber: String = "",
     val roles: List<JobRole> = emptyList(),
     val currentRoleId: String? = null,
     val currentRoleName: String = "",
@@ -61,6 +62,7 @@ class ProfileViewModel @Inject constructor(
         profile?.let {
             _uiState.value = _uiState.value.copy(
                 name = it.name,
+                contactNumber = it.contactNumber,
                 roles = it.roles,
                 remainingTokens = tokenManager.getRemainingTokens()
             )
@@ -77,6 +79,10 @@ class ProfileViewModel @Inject constructor(
 
     fun onNameChanged(name: String) {
         _uiState.value = _uiState.value.copy(name = name)
+    }
+
+    fun onContactNumberChanged(number: String) {
+        _uiState.value = _uiState.value.copy(contactNumber = number)
     }
 
     fun onRoleNameChanged(name: String) {
@@ -167,7 +173,7 @@ class ProfileViewModel @Inject constructor(
 
     private fun saveProfile() {
         val state = _uiState.value
-        val profile = Profile(state.name, state.roles)
+        val profile = Profile(state.name, state.contactNumber, state.roles)
         saveProfileUseCase(profile)
     }
 

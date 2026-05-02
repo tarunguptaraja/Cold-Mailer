@@ -48,6 +48,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupListeners() {
         binding.etName.doAfterTextChanged { viewModel.onNameChanged(it.toString()) }
+        binding.etContactNumber.doAfterTextChanged { viewModel.onContactNumberChanged(it.toString()) }
         
         // Role Editor listeners
         binding.etRoleName.doAfterTextChanged { viewModel.onRoleNameChanged(it.toString()) }
@@ -91,6 +92,7 @@ class MainActivity : AppCompatActivity() {
                 viewModel.uiState.collect { state ->
                     // Global info
                     if (binding.etName.text.toString() != state.name) binding.etName.setText(state.name)
+                    if (binding.etContactNumber.text.toString() != state.contactNumber) binding.etContactNumber.setText(state.contactNumber)
                     
                     // Role List
                     renderRoles(state.roles)
