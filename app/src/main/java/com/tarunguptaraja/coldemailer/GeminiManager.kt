@@ -50,6 +50,8 @@ class GeminiManager @Inject constructor(
                         * Extremely positive and enthusiastic.
                         * FOCUS ON TRANSFERABLE SKILLS: If the user's background is different from the JD (e.g., Android dev applying for Backend), do NOT mention the current irrelevant title. Instead, highlight the shared technical skills (e.g., Java, problem-solving, architecture) and how they apply to the target role.
                         * Make it feel like they are already a perfect fit for the specific team.
+                        * ANSWER JD QUESTIONS: If the Job Description explicitly asks any questions (e.g., "Are you willing to relocate?", "What is your expected salary?", "Do you have experience in X?"), explicitly provide a brief, professional answer to them in the email body based on the User's Resume. If the answer cannot be determined from the resume, provide a polite, professional placeholder answer.
+                        * End the email with a signature: "Thanks,\n${userProfile.name}" and add the contact number "${userProfile.contactNumber}" on the next line if it is not empty.
                    - A FOLLOW-UP EMAIL: A very brief, polite 1-2 sentence follow-up.
                 
                 IMPORTANT FORMATTING RULES:
