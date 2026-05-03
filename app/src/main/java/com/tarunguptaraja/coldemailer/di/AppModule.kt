@@ -6,6 +6,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.tarunguptaraja.coldemailer.BuildConfig
 import com.tarunguptaraja.coldemailer.GeminiManager
+import com.tarunguptaraja.coldemailer.RemoteConfigManager
 import com.tarunguptaraja.coldemailer.data.repository.EmailRepositoryImpl
 import com.tarunguptaraja.coldemailer.data.repository.ProfileRepositoryImpl
 import com.tarunguptaraja.coldemailer.data.repository.ResumeRepositoryImpl
@@ -57,8 +58,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideGeminiManager(apiKey: String, crashlytics: FirebaseCrashlytics): GeminiManager {
-        return GeminiManager(apiKey, crashlytics)
+    fun provideGeminiManager(apiKey: String, crashlytics: FirebaseCrashlytics, remoteConfigManager: RemoteConfigManager): GeminiManager {
+        return GeminiManager(apiKey, crashlytics, remoteConfigManager)
     }
 
     @Provides

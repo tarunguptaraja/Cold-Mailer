@@ -30,6 +30,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: ProfileViewModel by viewModels()
 
+    @javax.inject.Inject
+    lateinit var profilePreferenceManager: com.tarunguptaraja.coldemailer.ProfilePreferenceManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -38,15 +41,22 @@ class MainActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             insets
         }
 
         setupListeners()
         observeState()
     }
+    
+    override fun onResume() {
+        super.onResume()
+        binding.bottomNavigation.selectedItemId = R.id.nav_profile
+    }
 
     private fun setupListeners() {
+        com.tarunguptaraja.coldemailer.presentation.home.BottomNavHelper.setupBottomNav(this, binding.bottomNavigation, com.tarunguptaraja.coldemailer.R.id.nav_profile, profilePreferenceManager)
+        
         binding.etName.doAfterTextChanged { viewModel.onNameChanged(it.toString()) }
         binding.etContactNumber.doAfterTextChanged { viewModel.onContactNumberChanged(it.toString()) }
         
@@ -71,18 +81,17 @@ class MainActivity : AppCompatActivity() {
             viewModel.cancelEdit()
         }
 
-        binding.btnBack.setOnClickListener { finish() }
-
-        binding.btnAts.setOnClickListener {
-            startActivity(Intent(this, AtsScorerActivity::class.java))
-        }
-
-        binding.tvSave.setOnClickListener {
+        binding.btnSaveProfile.setOnClickListener {
+            viewModel.saveProfileInfo()
             if (viewModel.uiState.value.roles.isEmpty()) {
                 Toast.makeText(this, "Please add at least one job role profile", Toast.LENGTH_SHORT).show()
             } else {
                 goToSendScreen()
             }
+        }
+
+        binding.btnViewHistory.setOnClickListener {
+            startActivity(Intent(this, com.tarunguptaraja.coldemailer.presentation.history.TransactionHistoryActivity::class.java))
         }
     }
 
@@ -138,6 +147,8 @@ class MainActivity : AppCompatActivity() {
             binding.llRolesList.addView(roleBinding.root)
         }
     }
+
+
 
     private val pickPdfLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocument()

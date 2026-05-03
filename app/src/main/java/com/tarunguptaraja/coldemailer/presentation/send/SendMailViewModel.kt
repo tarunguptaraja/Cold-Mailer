@@ -33,7 +33,8 @@ data class SendMailUiState(
     val company: String? = null,
     val role: String? = null,
     val atsScore: Int? = null,
-    val atsFeedback: List<String>? = null
+    val atsFeedback: List<String>? = null,
+    val tokensRemaining: Long = 100000L
 )
 
 @HiltViewModel
@@ -42,7 +43,8 @@ class SendMailViewModel @Inject constructor(
     private val analyzeJobUseCase: AnalyzeJobUseCase,
     private val addHistoryUseCase: AddHistoryUseCase,
     private val scrapeUrlUseCase: ScrapeUrlUseCase,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val userManager: com.tarunguptaraja.coldemailer.UserManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SendMailUiState())
@@ -50,6 +52,15 @@ class SendMailViewModel @Inject constructor(
 
     init {
         loadProfile()
+        observeTokens()
+    }
+
+    private fun observeTokens() {
+        viewModelScope.launch {
+            tokenManager.tokens.collect { tokens ->
+                _uiState.value = _uiState.value.copy(tokensRemaining = tokens)
+            }
+        }
     }
 
     private fun loadProfile() {
@@ -57,7 +68,8 @@ class SendMailViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(
             profile = profile,
             roles = profile?.roles ?: emptyList(),
-            selectedRole = profile?.roles?.firstOrNull()
+            selectedRole = profile?.roles?.firstOrNull(),
+            tokensRemaining = tokenManager.getRemainingTokens()
         )
     }
 
@@ -154,6 +166,15 @@ class SendMailViewModel @Inject constructor(
                     atsFeedback = result.atsFeedback
                 )
                 tokenManager.deductTokens(result.tokensUsed)
+                
+                val tx = com.tarunguptaraja.coldemailer.domain.model.TokenTransaction(
+                    id = java.util.UUID.randomUUID().toString(),
+                    amount = result.tokensUsed,
+                    type = "DEDUCTION",
+                    description = "AI Mail Analysis: ${result.company ?: "Unknown"}",
+                    timestamp = System.currentTimeMillis()
+                )
+                userManager.addTokenTransaction(tx)
             } else {
                 _uiState.value = _uiState.value.copy(
                     isAnalyzing = false,

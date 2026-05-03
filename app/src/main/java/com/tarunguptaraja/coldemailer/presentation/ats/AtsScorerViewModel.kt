@@ -23,7 +23,8 @@ data class AtsScorerUiState(
     val resumeFileName: String = "",
     val resumeText: String = "",
     val atsReport: AtsReport? = null,
-    val error: String? = null
+    val error: String? = null,
+    val tokensRemaining: Long = 100000L
 )
 
 @HiltViewModel
@@ -31,20 +32,39 @@ class AtsScorerViewModel @Inject constructor(
     private val geminiManager: GeminiManager,
     private val resumeParser: ResumeParser,
     private val profilePreferenceManager: ProfilePreferenceManager,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val userManager: com.tarunguptaraja.coldemailer.UserManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AtsScorerUiState())
     val uiState: StateFlow<AtsScorerUiState> = _uiState.asStateFlow()
 
     init {
+        loadInitialData()
+        observeTokens()
+    }
+
+    private fun observeTokens() {
+        viewModelScope.launch {
+            tokenManager.tokens.collect { tokens ->
+                _uiState.value = _uiState.value.copy(tokensRemaining = tokens)
+            }
+        }
+    }
+
+    private fun loadInitialData() {
         // Load the first available resume from profile if exists
         viewModelScope.launch {
             val profile = profilePreferenceManager.getProfile()
             profile?.roles?.firstOrNull()?.let { role ->
                 _uiState.value = _uiState.value.copy(
                     resumeFileName = role.resumeFileName,
-                    resumeText = role.resumeText
+                    resumeText = role.resumeText,
+                    tokensRemaining = tokenManager.getRemainingTokens()
+                )
+            } ?: run {
+                _uiState.value = _uiState.value.copy(
+                    tokensRemaining = tokenManager.getRemainingTokens()
                 )
             }
         }
@@ -93,6 +113,15 @@ class AtsScorerViewModel @Inject constructor(
             if (report != null) {
                 _uiState.value = _uiState.value.copy(atsReport = report, isLoading = false)
                 tokenManager.deductTokens(report.tokensUsed)
+                
+                val tx = com.tarunguptaraja.coldemailer.domain.model.TokenTransaction(
+                    id = java.util.UUID.randomUUID().toString(),
+                    amount = report.tokensUsed,
+                    type = "DEDUCTION",
+                    description = "ATS Analysis: ${state.jobProfile}",
+                    timestamp = System.currentTimeMillis()
+                )
+                userManager.addTokenTransaction(tx)
             } else {
                 _uiState.value = _uiState.value.copy(isLoading = false, error = "Failed to calculate ATS score. Please try again.")
             }

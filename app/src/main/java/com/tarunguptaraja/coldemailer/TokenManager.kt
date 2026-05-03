@@ -39,4 +39,11 @@ class TokenManager @Inject constructor(@ApplicationContext context: Context) {
     fun hasSufficientTokens(): Boolean {
         return getRemainingTokens() > 0
     }
+
+    fun setTokens(count: Long) {
+        sharedPreferences.edit {
+            putLong(KEY_REMAINING_TOKENS, count)
+        }
+        _tokens.value = count
+    }
 }

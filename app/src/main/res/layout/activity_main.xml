@@ -43,32 +43,6 @@
             android:textColor="@color/white"
             android:textSize="@dimen/_10sdp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btn_ats"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageView
-            android:id="@+id/btn_ats"
-            android:layout_width="@dimen/_32sdp"
-            android:layout_height="@dimen/_32sdp"
-            android:layout_marginEnd="@dimen/_8sdp"
-            android:padding="@dimen/_6sdp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/baseline_analytics_24"
-            app:tint="@color/white"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btn_back"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageView
-            android:id="@+id/btn_back"
-            android:layout_width="@dimen/_32sdp"
-            android:layout_height="@dimen/_32sdp"
-            android:layout_marginEnd="@dimen/_12sdp"
-            android:padding="@dimen/_4sdp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/baseline_arrow_back_24"
-            app:tint="@color/white"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -162,6 +136,29 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_24sdp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:text="Token Usage"
+                    android:textColor="@color/colorTextPrimary"
+                    android:textSize="@dimen/_15sdp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_view_history"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="View History" />
+            </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
@@ -301,15 +298,15 @@
         android:padding="@dimen/_16sdp"
         android:background="@color/colorSurface"
         android:elevation="@dimen/_8sdp"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation">
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/tv_save"
+            android:id="@+id/btn_save_profile"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingVertical="@dimen/_12sdp"
             android:fontFamily="@font/montserrat_bold"
-            android:text="Go to Dashboard"
+            android:text="Update &amp; Go to Dashboard"
             android:textSize="@dimen/_15sdp"
             app:backgroundTint="@color/colorPrimary" />
     </FrameLayout>
@@ -323,7 +320,7 @@
         android:background="@color/colorSurface"
         android:elevation="@dimen/_12sdp"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_cancel_role"
@@ -351,5 +348,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorSurface"
+        app:menu="@menu/bottom_nav_menu"
+        app:labelVisibilityMode="labeled"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

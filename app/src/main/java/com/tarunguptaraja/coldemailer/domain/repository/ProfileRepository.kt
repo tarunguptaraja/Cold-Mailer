@@ -8,4 +8,5 @@ interface ProfileRepository {
     fun getProfile(): Profile?
     fun saveProfile(profile: Profile)
     fun getName(): String
+    fun deleteRole(roleId: String)
 }

@@ -28,6 +28,8 @@ class ProfilePreferenceManager @Inject constructor(@ApplicationContext context: 
         private const val KEY_BODY = "body"
         private const val KEY_RESUME_NAME = "resumeName"
         private const val KEY_RESUME_TEXT = "resumeText"
+        private const val KEY_LAST_UPDATED = "lastUpdated"
+        private const val KEY_TRANSACTIONS_JSON = "transactionsJson"
     }
 
     private val json = Json { ignoreUnknownKeys = true }
@@ -37,6 +39,7 @@ class ProfilePreferenceManager @Inject constructor(@ApplicationContext context: 
             putString(KEY_NAME, profile.name)
             putString(KEY_CONTACT_NUMBER, profile.contactNumber)
             putString(KEY_ROLES_JSON, json.encodeToString(profile.roles))
+            putLong(KEY_LAST_UPDATED, profile.lastUpdated)
         }
     }
 
@@ -44,6 +47,7 @@ class ProfilePreferenceManager @Inject constructor(@ApplicationContext context: 
         val name = sharedPreferences.getString(KEY_NAME, null)
         val contactNumber = sharedPreferences.getString(KEY_CONTACT_NUMBER, "") ?: ""
         val rolesJson = sharedPreferences.getString(KEY_ROLES_JSON, null)
+        val lastUpdated = sharedPreferences.getLong(KEY_LAST_UPDATED, 0L)
 
         return if (name != null) {
             val roles = if (!rolesJson.isNullOrEmpty()) {
@@ -55,10 +59,31 @@ class ProfilePreferenceManager @Inject constructor(@ApplicationContext context: 
             } else {
                 migrateLegacyData()
             }
-            Profile(name, contactNumber, roles)
+            Profile(name, contactNumber, roles, lastUpdated)
         } else {
             null
         }
+    }
+
+    fun saveTransactions(transactions: List<com.tarunguptaraja.coldemailer.domain.model.TokenTransaction>) {
+        sharedPreferences.edit {
+            putString(KEY_TRANSACTIONS_JSON, json.encodeToString(transactions))
+        }
+    }
+
+    fun getTransactions(): List<com.tarunguptaraja.coldemailer.domain.model.TokenTransaction> {
+        val jsonStr = sharedPreferences.getString(KEY_TRANSACTIONS_JSON, null) ?: return emptyList()
+        return try {
+            json.decodeFromString(jsonStr)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    fun addTransaction(transaction: com.tarunguptaraja.coldemailer.domain.model.TokenTransaction) {
+        val current = getTransactions().toMutableList()
+        current.add(0, transaction) // Add to top
+        saveTransactions(current)
     }
 
     private fun migrateLegacyData(): List<JobRole> {
@@ -95,5 +120,9 @@ class ProfilePreferenceManager @Inject constructor(@ApplicationContext context: 
     fun hasProfile(): Boolean {
         return sharedPreferences.contains(KEY_NAME) && 
                 (sharedPreferences.contains(KEY_ROLES_JSON) || sharedPreferences.contains(KEY_SUBJECT))
+    }
+
+    fun hasUserRegistered(): Boolean {
+        return sharedPreferences.contains(KEY_NAME) && !sharedPreferences.getString(KEY_NAME, "").isNullOrBlank()
     }
 }

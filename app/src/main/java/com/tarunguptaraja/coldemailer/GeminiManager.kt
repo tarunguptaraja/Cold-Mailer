@@ -17,13 +17,19 @@ import javax.inject.Singleton
 @Singleton
 class GeminiManager @Inject constructor(
     private val apiKey: String,
-    private val crashlytics: FirebaseCrashlytics
+    private val crashlytics: FirebaseCrashlytics,
+    private val remoteConfigManager: RemoteConfigManager
 ) {
 
-    private val generativeModel = GenerativeModel(
-        modelName = "gemini-2.5-flash",
-        apiKey = apiKey
-    )
+    private fun getGenerativeModel(): GenerativeModel {
+        var modelName = remoteConfigManager.getGeminiModelName()
+        if (modelName.isBlank()) modelName = "gemini-2.5-flash"
+        
+        return GenerativeModel(
+            modelName = modelName,
+            apiKey = apiKey
+        )
+    }
 
     suspend fun analyzeJD(
         input: Any,
@@ -74,7 +80,7 @@ class GeminiManager @Inject constructor(
                 }
             }
 
-            val response = generativeModel.generateContent(content)
+            val response = getGenerativeModel().generateContent(content)
             val responseText = response.text ?: ""
             val tokensUsed = response.usageMetadata?.totalTokenCount ?: 0
             Log.d("GeminiManager", "Response received ($tokensUsed tokens): $responseText")
@@ -157,7 +163,7 @@ class GeminiManager @Inject constructor(
                 text(prompt)
             }
 
-            val response = generativeModel.generateContent(content)
+            val response = getGenerativeModel().generateContent(content)
             val responseText = response.text ?: ""
             val tokensUsed = response.usageMetadata?.totalTokenCount ?: 0
             Log.d("GeminiManager", "ATS Score Response ($tokensUsed tokens): $responseText")

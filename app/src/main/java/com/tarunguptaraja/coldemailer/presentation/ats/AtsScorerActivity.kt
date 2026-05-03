@@ -17,12 +17,19 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.tarunguptaraja.coldemailer.databinding.ActivityAtsScorerBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import com.tarunguptaraja.coldemailer.ProfilePreferenceManager
+import com.tarunguptaraja.coldemailer.R
+import com.tarunguptaraja.coldemailer.presentation.home.BottomNavHelper
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AtsScorerActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAtsScorerBinding
     private val viewModel: AtsScorerViewModel by viewModels()
+
+    @Inject
+    lateinit var profilePreferenceManager: ProfilePreferenceManager
 
     private val pickPdfLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocument()
@@ -42,15 +49,22 @@ class AtsScorerActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             insets
         }
 
         setupUI()
         observeState()
     }
+    
+    override fun onResume() {
+        super.onResume()
+        binding.bottomNavigation.selectedItemId = R.id.nav_ats
+    }
 
     private fun setupUI() {
+        BottomNavHelper.setupBottomNav(this, binding.bottomNavigation, R.id.nav_ats, profilePreferenceManager)
+        
         binding.toolbar.setNavigationOnClickListener { finish() }
 
         binding.etJobProfile.doAfterTextChanged {
@@ -82,6 +96,7 @@ class AtsScorerActivity : AppCompatActivity() {
                 viewModel.uiState.collect { state ->
                     binding.progressLoading.visibility = if (state.isLoading) View.VISIBLE else View.GONE
                     binding.btnCalculate.isEnabled = !state.isLoading
+                    binding.tvTokens.text = "%,d Tokens".format(state.tokensRemaining)
                     
                     binding.tvResumeName.text = if (state.resumeFileName.isEmpty()) "No Resume Selected" else state.resumeFileName
 

@@ -24,9 +24,11 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.tarunguptaraja.coldemailer.databinding.ActivitySendEmailBinding
 import com.tarunguptaraja.coldemailer.domain.model.JobRole
 import com.tarunguptaraja.coldemailer.domain.model.Profile
+import com.tarunguptaraja.coldemailer.presentation.home.BottomNavHelper
 import com.tarunguptaraja.coldemailer.presentation.send.SendMailViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 import java.io.File
 import java.io.InputStream
 
@@ -39,6 +41,9 @@ class SendMailActivity : AppCompatActivity() {
     private var currentRoleName: String? = null
     private var lastModifiedBody: String? = null
     private var lastModifiedSubject: String? = null
+
+    @Inject
+    lateinit var profilePreferenceManager: ProfilePreferenceManager
 
     private val pickImageLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
@@ -60,13 +65,18 @@ class SendMailActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             insets
         }
 
         setupToneSpinner()
         setupListeners()
         observeState()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.bottomNavigation.selectedItemId = R.id.nav_mailer
     }
 
     private fun setupToneSpinner() {
@@ -76,6 +86,8 @@ class SendMailActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
+        BottomNavHelper.setupBottomNav(this, binding.bottomNavigation, R.id.nav_mailer, profilePreferenceManager)
+        
         binding.etJdText.etJdTextChanged { viewModel.onJdTextChanged(it.toString()) }
 
         binding.sendEmail.setOnClickListener {
@@ -130,6 +142,7 @@ class SendMailActivity : AppCompatActivity() {
                 viewModel.uiState.collect { state ->
                     binding.progressAnalysis.visibility = if (state.isAnalyzing) View.VISIBLE else View.INVISIBLE
                     binding.btnAnalyze.isEnabled = !state.isAnalyzing
+                    binding.tvTokens.text = "%,d Tokens".format(state.tokensRemaining)
 
                     // Role Dropdown
                     if (state.roles.isNotEmpty()) {

@@ -3,6 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <queries>
+        <package android:name="com.google.android.gms" />
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+            <data android:mimeType="*/*" />
+        </intent>
+        <package android:name="com.google.android.gm" />
+    </queries>
 
     <application
         android:name=".ColdMailerApplication"
@@ -16,19 +26,30 @@
         android:theme="@style/Theme.ColdEmailer"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
-            android:exported="true">
-
-        </activity>
+            android:name=".presentation.history.TransactionHistoryActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+            
         <activity
-            android:name=".SendMailActivity"
+            android:name=".MainActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".presentation.onboarding.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".presentation.onboarding.OnboardingActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".SendMailActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".HistoryActivity"
             android:exported="false" />
@@ -37,6 +58,10 @@
             android:exported="false"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".presentation.interview.MockInterviewActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

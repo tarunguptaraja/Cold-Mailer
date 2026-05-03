@@ -9,6 +9,7 @@ import com.tarunguptaraja.coldemailer.domain.model.Profile
 import com.tarunguptaraja.coldemailer.domain.use_case.ExtractResumeTextUseCase
 import com.tarunguptaraja.coldemailer.domain.use_case.GetProfileUseCase
 import com.tarunguptaraja.coldemailer.domain.use_case.SaveProfileUseCase
+import com.tarunguptaraja.coldemailer.domain.use_case.DeleteRoleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,15 +31,18 @@ data class ProfileUiState(
     val isLoading: Boolean = false,
     val message: String? = null,
     val isProfileSaved: Boolean = false,
-    val remainingTokens: Long = 100000L
+    val remainingTokens: Long = 100000L,
+    val transactions: List<com.tarunguptaraja.coldemailer.domain.model.TokenTransaction> = emptyList()
 )
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val saveProfileUseCase: SaveProfileUseCase,
+    private val deleteRoleUseCase: DeleteRoleUseCase,
     private val extractResumeTextUseCase: ExtractResumeTextUseCase,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val profilePreferenceManager: com.tarunguptaraja.coldemailer.ProfilePreferenceManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -47,6 +51,11 @@ class ProfileViewModel @Inject constructor(
     init {
         loadProfile()
         observeTokens()
+        loadTransactions()
+    }
+
+    private fun loadTransactions() {
+        _uiState.value = _uiState.value.copy(transactions = profilePreferenceManager.getTransactions())
     }
 
     private fun observeTokens() {
@@ -134,13 +143,25 @@ class ProfileViewModel @Inject constructor(
     fun deleteRole(roleId: String) {
         val updatedRoles = _uiState.value.roles.filter { it.id != roleId }
         _uiState.value = _uiState.value.copy(roles = updatedRoles)
+        deleteRoleUseCase(roleId)
         saveProfile()
     }
 
     fun saveCurrentRole() {
         val state = _uiState.value
+        
+        if (state.isLoading) {
+            _uiState.value = state.copy(message = "Please wait, extracting resume text...")
+            return
+        }
+
         if (state.currentRoleName.isBlank()) {
             _uiState.value = state.copy(message = "Please enter a role name")
+            return
+        }
+
+        if (state.currentResumeText.isBlank()) {
+            _uiState.value = state.copy(message = "Please select a resume and wait for extraction")
             return
         }
 
@@ -150,7 +171,8 @@ class ProfileViewModel @Inject constructor(
             subject = state.currentSubject,
             body = state.currentBody,
             resumeFileName = state.currentResumeName,
-            resumeText = state.currentResumeText
+            resumeText = state.currentResumeText,
+            lastUpdated = System.currentTimeMillis()
         )
 
         val updatedRoles = state.roles.toMutableList()
@@ -164,7 +186,8 @@ class ProfileViewModel @Inject constructor(
         _uiState.value = state.copy(
             roles = updatedRoles, currentRoleId = null, message = "Role saved"
         )
-        saveProfile()
+        val profile = Profile(state.name, state.contactNumber, updatedRoles, System.currentTimeMillis())
+        saveProfileUseCase(profile)
     }
 
     fun cancelEdit() {
@@ -173,8 +196,13 @@ class ProfileViewModel @Inject constructor(
 
     private fun saveProfile() {
         val state = _uiState.value
-        val profile = Profile(state.name, state.contactNumber, state.roles)
+        val profile = Profile(state.name, state.contactNumber, state.roles, System.currentTimeMillis())
         saveProfileUseCase(profile)
+    }
+
+    fun saveProfileInfo() {
+        saveProfile()
+        _uiState.value = _uiState.value.copy(message = "Profile information updated")
     }
 
     fun clearMessage() {

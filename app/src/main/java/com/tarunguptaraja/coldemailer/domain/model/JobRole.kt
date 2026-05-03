@@ -9,5 +9,6 @@ data class JobRole(
     val subject: String,
     val body: String,
     val resumeFileName: String,
-    val resumeText: String
+    val resumeText: String,
+    val lastUpdated: Long = 0L
 )

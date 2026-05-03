@@ -7,5 +7,6 @@ import kotlinx.serialization.Serializable
 data class Profile(
     val name: String,
     val contactNumber: String = "",
-    val roles: List<JobRole> = emptyList()
+    val roles: List<JobRole> = emptyList(),
+    val lastUpdated: Long = 0L
 )

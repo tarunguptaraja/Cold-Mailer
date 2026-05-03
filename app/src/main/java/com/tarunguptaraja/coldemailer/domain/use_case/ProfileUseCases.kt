@@ -15,3 +15,9 @@ class SaveProfileUseCase @Inject constructor(
 ) {
     operator fun invoke(profile: Profile) = repository.saveProfile(profile)
 }
+
+class DeleteRoleUseCase @Inject constructor(
+    private val repository: ProfileRepository
+) {
+    operator fun invoke(roleId: String) = repository.deleteRole(roleId)
+}
