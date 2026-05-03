@@ -66,7 +66,11 @@ class SendMailViewModel @Inject constructor(
     }
 
     fun onRoleSelected(role: JobRole) {
-        _uiState.value = _uiState.value.copy(selectedRole = role)
+        _uiState.value = _uiState.value.copy(
+            selectedRole = role,
+            modifiedSubject = null,
+            modifiedBody = null
+        )
     }
 
     fun onScreenshotSelected(bitmap: Bitmap?) {

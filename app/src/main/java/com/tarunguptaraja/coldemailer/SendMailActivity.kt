@@ -36,6 +36,10 @@ class SendMailActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySendEmailBinding
     private val viewModel: SendMailViewModel by viewModels()
 
+    private var currentRoleName: String? = null
+    private var lastModifiedBody: String? = null
+    private var lastModifiedSubject: String? = null
+
     private val pickImageLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -86,8 +90,14 @@ class SendMailActivity : AppCompatActivity() {
             state.profile?.let { profile ->
                 val pdfFile = role?.resumeFileName?.let { getLatestPdf(it) }
                 if (pdfFile != null) {
-                    val subjectToSend = binding.etSubject.text.toString().ifEmpty { state.modifiedSubject ?: role?.subject ?: "" }
-                    val bodyToSend = binding.etEmailBody.text.toString().ifEmpty { state.modifiedBody ?: role?.body ?: "" }
+                    val subjectToSend = binding.etSubject.text.toString()
+                    val bodyToSend = binding.etEmailBody.text.toString()
+                    
+                    if (subjectToSend.isBlank() || bodyToSend.isBlank()) {
+                        Toast.makeText(this, "Subject and Body cannot be empty", Toast.LENGTH_SHORT).show()
+                        return@setOnClickListener
+                    }
+                    
                     sendPdfInGmail(pdfFile, profile.copy(name = profile.name), subjectToSend, bodyToSend)
                     viewModel.saveSentHistory(emailText)
                 } else {
@@ -142,15 +152,31 @@ class SendMailActivity : AppCompatActivity() {
                         binding.etJdText.setText(state.jdText)
                     }
 
-                    // Email Data
+                    // Email Data Population
+                    val activeRole = state.selectedRole ?: state.roles.firstOrNull()
+                    
+                    // Handle Role Change (populate defaults if no AI modifications exist)
+                    if (activeRole != null && activeRole.roleName != currentRoleName) {
+                        currentRoleName = activeRole.roleName
+                        // Role changed, apply role defaults
+                        binding.etSubject.setText(activeRole.subject)
+                        binding.etEmailBody.setText(activeRole.body)
+                        lastModifiedSubject = null
+                        lastModifiedBody = null
+                    } else {
+                        // Handle AI Analysis Results
+                        if (state.modifiedSubject != null && state.modifiedSubject != lastModifiedSubject) {
+                            lastModifiedSubject = state.modifiedSubject
+                            binding.etSubject.setText(state.modifiedSubject)
+                        }
+                        if (state.modifiedBody != null && state.modifiedBody != lastModifiedBody) {
+                            lastModifiedBody = state.modifiedBody
+                            binding.etEmailBody.setText(state.modifiedBody)
+                        }
+                    }
+
                     if (state.emails.isNotEmpty() && binding.etEmail.text.isNullOrEmpty()) {
                         binding.etEmail.setText(state.emails)
-                    }
-                    if (state.modifiedSubject != null && binding.etSubject.text.isNullOrEmpty()) {
-                        binding.etSubject.setText(state.modifiedSubject)
-                    }
-                    if (state.modifiedBody != null && binding.etEmailBody.text.isNullOrEmpty()) {
-                        binding.etEmailBody.setText(state.modifiedBody)
                     }
 
                     // ATS Results
