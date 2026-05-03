@@ -2,18 +2,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/nav_ats"
-        android:icon="@drawable/baseline_analytics_24"
-        android:title="ATS Scan" />
+        android:icon="@drawable/ic_ats_scan"
+        android:title="@string/nav_ats_scan" />
     <item
         android:id="@+id/nav_mailer"
-        android:icon="@android:drawable/ic_dialog_email"
-        android:title="Mailer" />
+        android:icon="@drawable/ic_mailer"
+        android:title="@string/nav_mailer" />
     <item
         android:id="@+id/nav_mock_interview"
-        android:icon="@android:drawable/ic_btn_speak_now"
-        android:title="Interview" />
+        android:icon="@drawable/ic_interview"
+        android:title="@string/nav_interview" />
     <item
         android:id="@+id/nav_profile"
-        android:icon="@android:drawable/ic_menu_manage"
-        android:title="Profile" />
+        android:icon="@drawable/ic_person"
+        android:title="@string/nav_profile" />
 </menu>

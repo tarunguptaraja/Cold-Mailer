@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-        com.tarunguptaraja.coldemailer.presentation.home.BottomNavHelper.setupBottomNav(this, binding.bottomNavigation, com.tarunguptaraja.coldemailer.R.id.nav_profile, profilePreferenceManager)
+        BottomNavHelper.setupBottomNav(this, binding.bottomNavigation, R.id.nav_profile, profilePreferenceManager)
         
         binding.etName.doAfterTextChanged { viewModel.onNameChanged(it.toString()) }
         binding.etContactNumber.doAfterTextChanged { viewModel.onContactNumberChanged(it.toString()) }

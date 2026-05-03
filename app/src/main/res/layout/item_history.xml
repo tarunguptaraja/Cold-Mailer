@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="@dimen/_12sdp"
@@ -44,7 +45,8 @@
                     android:fontFamily="@font/montserrat_bold"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:text="Company - Role"
+                    android:text="Company - Role" 
+                    tools:text="Company - Role"
                     android:textColor="@color/colorTextPrimary"
                     android:textSize="@dimen/_14sdp" />
 
@@ -62,7 +64,7 @@
                         android:paddingHorizontal="@dimen/_8sdp"
                         android:paddingVertical="@dimen/_2sdp"
                         android:fontFamily="@font/montserrat_bold"
-                        android:text="Applied"
+                        android:text="@string/status_applied"
                         android:textColor="@color/white"
                         android:textSize="@dimen/_10sdp" />
                 </com.google.android.material.card.MaterialCardView>
@@ -134,6 +136,6 @@
             android:layout_gravity="center_vertical"
             android:layout_marginEnd="@dimen/_8sdp"
             app:tint="@color/colorTextSecondary"
-            android:src="@android:drawable/ic_media_play"/>
+            android:src="@drawable/ic_history"/>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

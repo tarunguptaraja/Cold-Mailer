@@ -19,7 +19,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import com.tarunguptaraja.coldemailer.ProfilePreferenceManager
 import com.tarunguptaraja.coldemailer.R
-import com.tarunguptaraja.coldemailer.presentation.home.BottomNavHelper
+import com.tarunguptaraja.coldemailer.BottomNavHelper
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -64,8 +64,6 @@ class AtsScorerActivity : AppCompatActivity() {
 
     private fun setupUI() {
         BottomNavHelper.setupBottomNav(this, binding.bottomNavigation, R.id.nav_ats, profilePreferenceManager)
-        
-        binding.toolbar.setNavigationOnClickListener { finish() }
 
         binding.etJobProfile.doAfterTextChanged {
             viewModel.onJobProfileChanged(it.toString())

@@ -9,48 +9,32 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="?attr/actionBarSize"
         android:background="@color/colorPrimary"
-        android:paddingVertical="@dimen/_8sdp"
+        android:paddingHorizontal="@dimen/_16sdp"
         app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-            android:id="@+id/btn_profile"
-            android:layout_width="@dimen/_32sdp"
-            android:layout_height="@dimen/_32sdp"
-            android:layout_marginStart="@dimen/_12sdp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="@dimen/_4sdp"
-            android:src="@drawable/profile"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/white" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_12sdp"
             android:fontFamily="@font/montserrat_bold"
             android:text="@string/app_title"
             android:textColor="@color/white"
-            android:textSize="@dimen/_16sdp"
+            android:textSize="@dimen/_18sdp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@id/btn_profile"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
             android:id="@+id/btn_history"
-            android:layout_width="@dimen/_32sdp"
-            android:layout_height="@dimen/_32sdp"
+            android:layout_width="@dimen/_24sdp"
+            android:layout_height="@dimen/_24sdp"
             android:layout_marginEnd="@dimen/_12sdp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="@dimen/_6sdp"
-            android:src="@android:drawable/ic_menu_recent_history"
+            android:src="@drawable/ic_history"
+            app:tint="@color/white"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/white" />
+            app:layout_constraintEnd_toStartOf="@id/tv_tokens"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/tv_tokens"
@@ -65,15 +49,16 @@
             android:textColor="@color/white"
             android:textSize="@dimen/_10sdp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btn_history"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:fillViewport="true"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_panel"
+        android:clipToPadding="false"
+        android:paddingBottom="@dimen/_80sdp"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
         app:layout_constraintTop_toBottomOf="@id/app_bar">
 
         <LinearLayout
@@ -88,7 +73,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/_8sdp"
                 android:fontFamily="@font/montserrat_bold"
-                android:text="Active Profile"
+                android:text="@string/label_active_profile"
                 android:textColor="@color/colorTextPrimary"
                 android:textSize="@dimen/_15sdp" />
 
@@ -97,7 +82,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/_16sdp"
-                android:hint="Select Your Role">
+                android:hint="@string/hint_select_role">
 
                 <AutoCompleteTextView
                     android:id="@+id/spinner_role"
@@ -105,7 +90,7 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/montserrat"
                     android:inputType="none"
-                    android:text="Default Role" />
+                    android:text="@string/default_role" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.card.MaterialCardView
@@ -134,7 +119,7 @@
                             android:layout_width="@dimen/_20sdp"
                             android:layout_height="@dimen/_20sdp"
                             android:layout_marginEnd="@dimen/_8sdp"
-                            android:src="@android:drawable/ic_menu_info_details"
+                            android:src="@drawable/ic_document"
                             app:tint="@color/colorHighlight" />
 
                         <TextView
@@ -166,7 +151,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:hint="Paste JD URL or Text"
+                            android:hint="@string/hint_jd_url_text"
                             app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
                             app:boxCornerRadiusBottomStart="@dimen/_8sdp"
                             app:boxCornerRadiusTopEnd="@dimen/_8sdp"
@@ -193,7 +178,7 @@
                             app:cardCornerRadius="@dimen/_8sdp"
                             app:cardElevation="0dp"
                             app:strokeColor="@color/colorDivider"
-                            app:strokeWidth="1dp">
+                            app:strokeWidth="@dimen/_1sdp">
 
                             <ImageView
                                 android:id="@+id/btn_screenshot"
@@ -201,7 +186,7 @@
                                 android:layout_height="match_parent"
                                 android:background="?attr/selectableItemBackground"
                                 android:scaleType="centerInside"
-                                android:src="@android:drawable/ic_menu_camera" />
+                                android:src="@drawable/ic_gallery" />
                         </com.google.android.material.card.MaterialCardView>
                     </LinearLayout>
 
@@ -211,14 +196,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/_8sdp"
-                        android:hint="Email Tone">
+                        android:hint="@string/label_email_tone">
 
                         <AutoCompleteTextView
                             android:id="@+id/spinner_tone"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="none"
-                            android:text="Professional" />
+                            android:text="@string/tone_professional" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.button.MaterialButton
@@ -268,7 +253,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/_12sdp"
                         android:fontFamily="@font/montserrat_bold"
-                        android:text="ATS Match Analysis"
+                        android:text="@string/label_ats_analysis"
                         android:textColor="@color/colorTextPrimary"
                         android:textSize="@dimen/_15sdp" />
 
@@ -298,7 +283,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
                                 android:fontFamily="@font/montserrat_bold"
-                                android:text="0%"
+                                android:text="@string/ats_score_format"
                                 android:textColor="@color/colorPrimary"
                                 android:textSize="@dimen/_14sdp" />
                         </FrameLayout>
@@ -310,7 +295,7 @@
                             android:layout_marginStart="@dimen/_16sdp"
                             android:layout_weight="1"
                             android:fontFamily="@font/montserrat"
-                            android:text="Feedback will appear here."
+                            android:text="@string/default_ats_feedback"
                             android:textColor="@color/colorTextSecondary"
                             android:textSize="@dimen/_12sdp" />
                     </LinearLayout>
@@ -343,14 +328,14 @@
                             android:layout_width="@dimen/_20sdp"
                             android:layout_height="@dimen/_20sdp"
                             android:layout_marginEnd="@dimen/_8sdp"
-                            android:src="@android:drawable/ic_menu_edit"
+                            android:src="@drawable/ic_edit"
                             app:tint="@color/colorHighlight" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/montserrat_bold"
-                            android:text="Draft Preview"
+                            android:text="@string/label_draft_preview"
                             android:textColor="@color/colorTextPrimary"
                             android:textSize="@dimen/_15sdp" />
                     </LinearLayout>
@@ -361,7 +346,7 @@
                         android:layout_marginTop="@dimen/_4sdp"
                         android:layout_marginBottom="@dimen/_12sdp"
                         android:fontFamily="@font/montserrat"
-                        android:text="Review and edit your email before sending."
+                        android:text="@string/subtitle_draft_preview"
                         android:textColor="@color/colorTextSecondary"
                         android:textSize="@dimen/_12sdp" />
 
@@ -393,7 +378,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/_12sdp"
-                        android:hint="Subject"
+                        android:hint="@string/hint_subject_field"
                         app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
                         app:boxCornerRadiusBottomStart="@dimen/_8sdp"
                         app:boxCornerRadiusTopEnd="@dimen/_8sdp"
@@ -415,7 +400,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/_16sdp"
-                        android:hint="Email Draft"
+                        android:hint="@string/hint_email_draft"
                         app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
                         app:boxCornerRadiusBottomStart="@dimen/_8sdp"
                         app:boxCornerRadiusTopEnd="@dimen/_8sdp"
@@ -439,33 +424,25 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/montserrat"
-                android:text="Clicking Send will open Gmail with your role-specific resume attached and the email draft ready for your review."
+                android:text="@string/msg_gmail_info"
                 android:textColor="@color/colorTextSecondary"
                 android:textSize="@dimen/_12sdp" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/send_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_16sdp"
+                android:layout_marginBottom="@dimen/_16sdp"
+                android:fontFamily="@font/montserrat_bold"
+                android:paddingVertical="@dimen/_12sdp"
+                android:text="@string/btn_send_email"
+                android:textSize="@dimen/_15sdp"
+                app:backgroundTint="@color/colorPrimary"
+                app:cornerRadius="@dimen/_8sdp" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
-    <FrameLayout
-        android:id="@+id/bottom_panel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/colorSurface"
-        android:elevation="@dimen/_8sdp"
-        android:padding="@dimen/_16sdp"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navigation">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/send_email"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/montserrat_bold"
-            android:paddingVertical="@dimen/_12sdp"
-            android:text="@string/btn_send_email"
-            android:textSize="@dimen/_15sdp"
-            app:backgroundTint="@color/colorPrimary"
-            app:cornerRadius="@dimen/_8sdp" />
-    </FrameLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"

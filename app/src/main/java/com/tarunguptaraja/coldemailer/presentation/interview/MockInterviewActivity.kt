@@ -12,7 +12,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.tarunguptaraja.coldemailer.ProfilePreferenceManager
 import com.tarunguptaraja.coldemailer.R
 import com.tarunguptaraja.coldemailer.databinding.ActivityMockInterviewBinding
-import com.tarunguptaraja.coldemailer.presentation.home.BottomNavHelper
+import com.tarunguptaraja.coldemailer.BottomNavHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject

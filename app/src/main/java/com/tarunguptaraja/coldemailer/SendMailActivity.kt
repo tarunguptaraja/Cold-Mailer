@@ -1,12 +1,9 @@
 package com.tarunguptaraja.coldemailer
 
 import android.content.Intent
-import com.tarunguptaraja.coldemailer.R
-
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -22,15 +19,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.tarunguptaraja.coldemailer.databinding.ActivitySendEmailBinding
-import com.tarunguptaraja.coldemailer.domain.model.JobRole
 import com.tarunguptaraja.coldemailer.domain.model.Profile
-import com.tarunguptaraja.coldemailer.presentation.home.BottomNavHelper
 import com.tarunguptaraja.coldemailer.presentation.send.SendMailViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 import java.io.File
 import java.io.InputStream
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SendMailActivity : AppCompatActivity() {
@@ -53,7 +48,8 @@ class SendMailActivity : AppCompatActivity() {
             val bitmap = BitmapFactory.decodeStream(inputStream)
             viewModel.onScreenshotSelected(bitmap)
             binding.btnScreenshot.setImageBitmap(bitmap)
-            Toast.makeText(this, getString(R.string.msg_screenshot_selected), Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.msg_screenshot_selected), Toast.LENGTH_SHORT)
+                .show()
         }
     }
 
@@ -86,9 +82,18 @@ class SendMailActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-        BottomNavHelper.setupBottomNav(this, binding.bottomNavigation, R.id.nav_mailer, profilePreferenceManager)
-        
-        binding.etJdText.etJdTextChanged { viewModel.onJdTextChanged(it.toString()) }
+        BottomNavHelper.setupBottomNav(
+            this,
+            binding.bottomNavigation,
+            R.id.nav_mailer,
+            profilePreferenceManager
+        )
+
+        binding.etJdText.doAfterTextChanged { viewModel.onJdTextChanged(it.toString()) }
+
+        binding.btnHistory.setOnClickListener {
+            startActivity(Intent(this, HistoryActivity::class.java))
+        }
 
         binding.sendEmail.setOnClickListener {
             val emailText = binding.etEmail.text.toString()
@@ -104,26 +109,24 @@ class SendMailActivity : AppCompatActivity() {
                 if (pdfFile != null) {
                     val subjectToSend = binding.etSubject.text.toString()
                     val bodyToSend = binding.etEmailBody.text.toString()
-                    
+
                     if (subjectToSend.isBlank() || bodyToSend.isBlank()) {
-                        Toast.makeText(this, "Subject and Body cannot be empty", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Subject and Body cannot be empty", Toast.LENGTH_SHORT)
+                            .show()
                         return@setOnClickListener
                     }
-                    
-                    sendPdfInGmail(pdfFile, profile.copy(name = profile.name), subjectToSend, bodyToSend)
+
+                    sendPdfInGmail(
+                        pdfFile,
+                        profile.copy(name = profile.name),
+                        subjectToSend,
+                        bodyToSend
+                    )
                     viewModel.saveSentHistory(emailText)
                 } else {
                     Toast.makeText(this, "No resume found for this role", Toast.LENGTH_SHORT).show()
                 }
             }
-        }
-
-        binding.btnHistory.setOnClickListener {
-            startActivity(Intent(this, HistoryActivity::class.java))
-        }
-
-        binding.btnProfile.setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
         }
 
         binding.btnScreenshot.setOnClickListener {
@@ -140,16 +143,21 @@ class SendMailActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
-                    binding.progressAnalysis.visibility = if (state.isAnalyzing) View.VISIBLE else View.INVISIBLE
+                    binding.progressAnalysis.visibility =
+                        if (state.isAnalyzing) View.VISIBLE else View.INVISIBLE
                     binding.btnAnalyze.isEnabled = !state.isAnalyzing
                     binding.tvTokens.text = "%,d Tokens".format(state.tokensRemaining)
 
                     // Role Dropdown
                     if (state.roles.isNotEmpty()) {
                         val roleNames = state.roles.map { it.roleName }
-                        val adapter = ArrayAdapter(this@SendMailActivity, android.R.layout.simple_dropdown_item_1line, roleNames)
+                        val adapter = ArrayAdapter(
+                            this@SendMailActivity,
+                            android.R.layout.simple_dropdown_item_1line,
+                            roleNames
+                        )
                         binding.spinnerRole.setAdapter(adapter)
-                        
+
                         if (binding.spinnerRole.text.isNullOrEmpty() || !roleNames.contains(binding.spinnerRole.text.toString())) {
                             val defaultRole = state.selectedRole ?: state.roles.first()
                             binding.spinnerRole.setText(defaultRole.roleName, false)
@@ -167,7 +175,7 @@ class SendMailActivity : AppCompatActivity() {
 
                     // Email Data Population
                     val activeRole = state.selectedRole ?: state.roles.firstOrNull()
-                    
+
                     // Handle Role Change (populate defaults if no AI modifications exist)
                     if (activeRole != null && activeRole.roleName != currentRoleName) {
                         currentRoleName = activeRole.roleName
@@ -197,7 +205,8 @@ class SendMailActivity : AppCompatActivity() {
                         binding.cardAtsScore.visibility = View.VISIBLE
                         binding.atsProgress.progress = state.atsScore
                         binding.tvAtsScore.text = "${state.atsScore}%"
-                        binding.tvAtsFeedback.text = state.atsFeedback?.joinToString("\n• ", prefix = "• ")
+                        binding.tvAtsFeedback.text =
+                            state.atsFeedback?.joinToString("\n• ", prefix = "• ")
                     }
 
                     state.analysisError?.let {
@@ -238,7 +247,10 @@ class SendMailActivity : AppCompatActivity() {
 // Extension to avoid infinite loop
 fun android.widget.EditText.etJdTextChanged(after: (android.text.Editable?) -> Unit) {
     this.addTextChangedListener(object : android.text.TextWatcher {
-        override fun afterTextChanged(s: android.text.Editable?) { after(s) }
+        override fun afterTextChanged(s: android.text.Editable?) {
+            after(s)
+        }
+
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
     })

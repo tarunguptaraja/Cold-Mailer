@@ -40,4 +40,98 @@
     <string name="err_no_email_app">No email app found</string>
     <string name="default_followup">Hi,\n\nJust following up on my previous email. I would love to connect soon!\n\nThanks.</string>
     <string name="label_needs_followup">Needs Follow-up</string>
+
+    <!-- Main Activity / Profile -->
+    <string name="label_job_roles">Job Role Profiles</string>
+    <string name="label_token_usage">Token Usage</string>
+    <string name="btn_view_history">View History</string>
+    <string name="title_create_role">Create New Role</string>
+    <string name="title_edit_role">Edit Role</string>
+    <string name="hint_role_name">Role Name (e.g., Android Developer)</string>
+    <string name="hint_default_subject">Default Email Subject</string>
+    <string name="hint_default_body">Default Email Body Template</string>
+    <string name="label_resume_role">Resume for this Role</string>
+    <string name="msg_no_resume_selected">No Resume Selected</string>
+    <string name="btn_upload_resume">Upload</string>
+    <string name="btn_change_resume">Change</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_save_role">Save Role</string>
+    <string name="btn_update_go_dashboard">Update &amp; Go to Dashboard</string>
+    <string name="btn_add_role">Add Role</string>
+
+    <!-- ATS Scorer Activity -->
+    <string name="title_ats_scorer">AI ATS Scorer</string>
+    <string name="label_job_details">Job Details</string>
+    <string name="hint_job_profile">Target Job Profile (e.g. Android Developer)</string>
+    <string name="hint_experience_years">Required Experience (Years)</string>
+    <string name="label_resume">Resume</string>
+    <string name="btn_calculate_ats">Calculate ATS Score</string>
+    <string name="label_ats_match_score">ATS Match Score</string>
+    <string name="label_detailed_analysis">Detailed Analysis</string>
+    <string name="label_strengths">Strengths</string>
+    <string name="label_gaps_weaknesses">Gaps &amp; Weaknesses</string>
+    <string name="label_missing_keywords">Missing Keywords</string>
+    <string name="label_actionable_tips">Actionable Tips</string>
+    <string name="btn_check_another">Check Another Profile</string>
+    <string name="default_ats_summary">Your resume matches well with the role requirements but missing some key terms.</string>
+    <string name="default_strengths">• strong kotlin skills\n• experience with hilt</string>
+    <string name="default_weaknesses">• lacks compose experience\n• no backend knowledge</string>
+    <string name="default_keywords">Jetpack Compose, MVVM, Room, Flow</string>
+    <string name="default_tips">• add compose project\n• highlight mvvm usage</string>
+
+    <!-- Send Email Activity -->
+    <string name="label_active_profile">Active Profile</string>
+    <string name="hint_select_role">Select Your Role</string>
+    <string name="default_role">Default Role</string>
+    <string name="hint_jd_url_text">Paste JD URL or Text</string>
+    <string name="label_email_tone">Email Tone</string>
+    <string name="tone_professional">Professional</string>
+    <string name="tone_enthusiastic">Enthusiastic</string>
+    <string name="tone_casual">Casual</string>
+    <string name="tone_direct">Direct</string>
+    <string name="tone_creative">Creative</string>
+    <string name="label_ats_analysis">ATS Match Analysis</string>
+    <string name="default_ats_feedback">Feedback will appear here.</string>
+    <string name="label_draft_preview">Draft Preview</string>
+    <string name="subtitle_draft_preview">Review and edit your email before sending.</string>
+    <string name="hint_subject_field">Subject</string>
+    <string name="hint_email_draft">Email Draft</string>
+    <string name="msg_gmail_info">Clicking Send will open Gmail with your role-specific resume attached and the email draft ready for your review.</string>
+    <string name="ats_score_format">%d%%</string>
+
+    <!-- History Activity -->
+    <string name="title_history">History &amp; Follow-ups</string>
+    <string name="empty_state_no_emails">No emails sent yet</string>
+    <string name="empty_state_subtitle">Your history and follow-ups will appear here.</string>
+    <string name="status_applied">Applied</string>
+
+    <!-- Transaction History -->
+    <string name="title_transaction_history">AI Credits History</string>
+    <string name="empty_no_transactions">No transactions yet</string>
+
+    <!-- Onboarding -->
+    <string name="welcome_title">Welcome to\nColdEmailer</string>
+    <string name="welcome_subtitle">Let\'s get to know you before you land your dream job.</string>
+    <string name="welcome_bonus">Create your profile to instantly receive 1,00,000 AI Tokens!</string>
+    <string name="hint_your_name">Your Name *</string>
+    <string name="hint_contact_optional">Contact Number (Optional)</string>
+    <string name="btn_get_started">Get Started</string>
+
+    <!-- Splash Screen -->
+    <string name="app_tagline">AI-Powered Job Assistant</string>
+    <string name="version_format">Version %s</string>
+    <string name="label_syncing">Syncing...</string>
+
+    <!-- Mock Interview (Coming Soon) -->
+    <string name="title_mock_interview">AI Mock Interview</string>
+    <string name="subtitle_mock_interview">Practice your interview skills with AI.</string>
+    <string name="label_soon">SOON</string>
+    <string name="title_profile_settings">Profile &amp; Settings</string>
+    <string name="subtitle_profile_settings">Manage your details and job roles.</string>
+
+    <!-- Navigation -->
+    <string name="nav_ats_scan">ATS Scan</string>
+    <string name="nav_mailer">Mailer</string>
+    <string name="nav_interview">Interview</string>
+    <string name="nav_profile">Profile</string>
 </resources>
