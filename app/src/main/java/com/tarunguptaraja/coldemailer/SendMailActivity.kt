@@ -7,6 +7,8 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import android.graphics.Color
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -33,12 +35,12 @@ class SendMailActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySendEmailBinding
     private val viewModel: SendMailViewModel by viewModels()
 
+    @Inject
+    lateinit var bottomNavHelper: BottomNavHelper
+
     private var currentRoleName: String? = null
     private var lastModifiedBody: String? = null
     private var lastModifiedSubject: String? = null
-
-    @Inject
-    lateinit var profilePreferenceManager: ProfilePreferenceManager
 
     private val pickImageLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
@@ -55,13 +57,15 @@ class SendMailActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
+        )
         binding = ActivitySendEmailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
+            v.setPadding(systemBars.left, 0, systemBars.right, 0)
             insets
         }
 
@@ -82,11 +86,10 @@ class SendMailActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-        BottomNavHelper.setupBottomNav(
+        bottomNavHelper.setupBottomNav(
             this,
             binding.bottomNavigation,
-            R.id.nav_mailer,
-            profilePreferenceManager
+            R.id.nav_mailer
         )
 
         binding.etJdText.doAfterTextChanged { viewModel.onJdTextChanged(it.toString()) }
@@ -134,8 +137,21 @@ class SendMailActivity : AppCompatActivity() {
         }
 
         binding.btnAnalyze.setOnClickListener {
+            val state = viewModel.uiState.value
+            val jdText = binding.etJdText.text.toString().trim()
+            if (jdText.isEmpty() && state.screenshot == null) {
+                Toast.makeText(this, "Please enter job description text or select a screenshot", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             val tone = binding.spinnerTone.text.toString()
             viewModel.analyzeJob(tone)
+        }
+
+        binding.btnClearData.setOnClickListener {
+            viewModel.clearJdData()
+            binding.etJdText.setText("")
+            binding.btnScreenshot.setImageResource(R.drawable.ic_gallery)
+            Toast.makeText(this, "Data cleared", Toast.LENGTH_SHORT).show()
         }
     }
 

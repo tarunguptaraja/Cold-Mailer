@@ -1,6 +1,8 @@
 package com.tarunguptaraja.coldemailer.presentation.interview
 
 import android.os.Bundle
+import android.graphics.Color
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -9,7 +11,6 @@ import androidx.activity.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.tarunguptaraja.coldemailer.ProfilePreferenceManager
 import com.tarunguptaraja.coldemailer.R
 import com.tarunguptaraja.coldemailer.databinding.ActivityMockInterviewBinding
 import com.tarunguptaraja.coldemailer.BottomNavHelper
@@ -24,17 +25,19 @@ class MockInterviewActivity : AppCompatActivity() {
     private val viewModel: MockInterviewViewModel by viewModels()
 
     @Inject
-    lateinit var profilePreferenceManager: ProfilePreferenceManager
+    lateinit var bottomNavHelper: BottomNavHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
+        )
         binding = ActivityMockInterviewBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
+            v.setPadding(systemBars.left, 0, systemBars.right, 0)
             insets
         }
 
@@ -48,11 +51,10 @@ class MockInterviewActivity : AppCompatActivity() {
     }
 
     private fun setupUI() {
-        BottomNavHelper.setupBottomNav(
+        bottomNavHelper.setupBottomNav(
             this,
             binding.bottomNavigation,
-            R.id.nav_mock_interview,
-            profilePreferenceManager
+            R.id.nav_mock_interview
         )
     }
 

@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import android.graphics.Color
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -17,7 +19,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.tarunguptaraja.coldemailer.databinding.ActivityAtsScorerBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import com.tarunguptaraja.coldemailer.ProfilePreferenceManager
 import com.tarunguptaraja.coldemailer.R
 import com.tarunguptaraja.coldemailer.BottomNavHelper
 import javax.inject.Inject
@@ -29,7 +30,7 @@ class AtsScorerActivity : AppCompatActivity() {
     private val viewModel: AtsScorerViewModel by viewModels()
 
     @Inject
-    lateinit var profilePreferenceManager: ProfilePreferenceManager
+    lateinit var bottomNavHelper: BottomNavHelper
 
     private val pickPdfLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocument()
@@ -43,13 +44,15 @@ class AtsScorerActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
+        )
         binding = ActivityAtsScorerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
+            v.setPadding(systemBars.left, 0, systemBars.right, 0)
             insets
         }
 
@@ -63,7 +66,7 @@ class AtsScorerActivity : AppCompatActivity() {
     }
 
     private fun setupUI() {
-        BottomNavHelper.setupBottomNav(this, binding.bottomNavigation, R.id.nav_ats, profilePreferenceManager)
+        bottomNavHelper.setupBottomNav(this, binding.bottomNavigation, R.id.nav_ats)
 
         binding.etJobProfile.doAfterTextChanged {
             viewModel.onJobProfileChanged(it.toString())

@@ -5,6 +5,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import android.graphics.Color
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -21,6 +23,7 @@ import com.tarunguptaraja.coldemailer.domain.model.JobRole
 import com.tarunguptaraja.coldemailer.presentation.ats.AtsScorerActivity
 import com.tarunguptaraja.coldemailer.presentation.profile.ProfileViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
@@ -30,18 +33,20 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: ProfileViewModel by viewModels()
 
-    @javax.inject.Inject
-    lateinit var profilePreferenceManager: com.tarunguptaraja.coldemailer.ProfilePreferenceManager
+    @Inject
+    lateinit var bottomNavHelper: BottomNavHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
+        )
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
+            v.setPadding(systemBars.left, 0, systemBars.right, 0)
             insets
         }
 
@@ -55,7 +60,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-        BottomNavHelper.setupBottomNav(this, binding.bottomNavigation, R.id.nav_profile, profilePreferenceManager)
+        bottomNavHelper.setupBottomNav(this, binding.bottomNavigation, R.id.nav_profile)
         
         binding.etName.doAfterTextChanged { viewModel.onNameChanged(it.toString()) }
         binding.etContactNumber.doAfterTextChanged { viewModel.onContactNumberChanged(it.toString()) }

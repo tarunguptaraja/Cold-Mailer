@@ -6,14 +6,18 @@ import android.widget.Toast
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.tarunguptaraja.coldemailer.presentation.ats.AtsScorerActivity
 import com.tarunguptaraja.coldemailer.presentation.interview.MockInterviewActivity
+import javax.inject.Inject
+import javax.inject.Singleton
 
-object BottomNavHelper {
+@Singleton
+class BottomNavHelper @Inject constructor(
+    private val profilePreferenceManager: ProfilePreferenceManager
+) {
 
     fun setupBottomNav(
         activity: Activity,
         bottomNav: BottomNavigationView,
-        currentNavId: Int,
-        profilePreferenceManager: ProfilePreferenceManager
+        currentNavId: Int
     ) {
         bottomNav.selectedItemId = currentNavId
 
@@ -44,7 +48,9 @@ object BottomNavHelper {
                 }
                 R.id.nav_mock_interview -> {
                     if (currentNavId != R.id.nav_mock_interview) {
-                        Toast.makeText(activity, "AI Mock Interviews are coming soon!", Toast.LENGTH_SHORT).show()
+                        activity.startActivity(Intent(activity, MockInterviewActivity::class.java))
+                        activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                        activity.finish()
                     }
                     true
                 }

@@ -89,6 +89,10 @@ class SendMailViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(screenshot = bitmap)
     }
 
+    fun clearJdData() {
+        _uiState.value = _uiState.value.copy(jdText = "", screenshot = null)
+    }
+
     fun analyzeJob(tone: String = "Professional") {
         Log.d("SendMailViewModel", "analyzeJob called with tone: $tone")
         val state = _uiState.value

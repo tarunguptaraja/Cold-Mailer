@@ -6,106 +6,80 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AnticipateInterpolator
-import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import com.tarunguptaraja.coldemailer.ProfilePreferenceManager
+import androidx.lifecycle.repeatOnLifecycle
 import com.tarunguptaraja.coldemailer.R
-import com.tarunguptaraja.coldemailer.RemoteConfigManager
 import com.tarunguptaraja.coldemailer.SendMailActivity
-import com.tarunguptaraja.coldemailer.UserManager
+import com.tarunguptaraja.coldemailer.databinding.ActivitySplashBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class SplashActivity : AppCompatActivity() {
 
-    @Inject
-    lateinit var userManager: UserManager
-
-    @Inject
-    lateinit var profilePreferenceManager: ProfilePreferenceManager
-
-    @Inject
-    lateinit var remoteConfigManager: RemoteConfigManager
+    private lateinit var binding: ActivitySplashBinding
+    private val viewModel: SplashViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_splash)
+        binding = ActivitySplashBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         setupVersion()
         startLogoAnimation()
+        observeNavigation()
     }
 
     private fun setupVersion() {
-        val versionText = findViewById<TextView>(R.id.tv_version)
         val versionName = packageManager.getPackageInfo(packageName, 0).versionName
-        versionText.text = getString(R.string.version_format, versionName)
+        binding.tvVersion.text = getString(R.string.version_format, versionName)
     }
 
     private fun startLogoAnimation() {
-        val logo = findViewById<View>(R.id.iv_logo)
-        val appName = findViewById<View>(R.id.tv_app_name)
-        val tagline = findViewById<View>(R.id.tv_tagline)
+        binding.ivLogo.alpha = 0f
+        binding.ivLogo.scaleX = 0.8f
+        binding.ivLogo.scaleY = 0.8f
+        binding.tvAppName.alpha = 0f
+        binding.tvTagline.alpha = 0f
 
-        // Initial states
-        logo.alpha = 0f
-        logo.scaleX = 0.8f
-        logo.scaleY = 0.8f
-        appName.alpha = 0f
-        tagline.alpha = 0f
+        val logoScaleX = ObjectAnimator.ofFloat(binding.ivLogo, View.SCALE_X, 0.8f, 1f)
+        val logoScaleY = ObjectAnimator.ofFloat(binding.ivLogo, View.SCALE_Y, 0.8f, 1f)
+        val logoAlpha = ObjectAnimator.ofFloat(binding.ivLogo, View.ALPHA, 0f, 1f)
+        val nameAlpha = ObjectAnimator.ofFloat(binding.tvAppName, View.ALPHA, 0f, 1f)
+        val taglineAlpha = ObjectAnimator.ofFloat(binding.tvTagline, View.ALPHA, 0f, 0.9f)
 
-        // Logo scale and fade animation
-        val logoScaleX = ObjectAnimator.ofFloat(logo, View.SCALE_X, 0.8f, 1f)
-        val logoScaleY = ObjectAnimator.ofFloat(logo, View.SCALE_Y, 0.8f, 1f)
-        val logoAlpha = ObjectAnimator.ofFloat(logo, View.ALPHA, 0f, 1f)
-
-        // App name fade in
-        val nameAlpha = ObjectAnimator.ofFloat(appName, View.ALPHA, 0f, 1f)
-
-        // Tagline fade in
-        val taglineAlpha = ObjectAnimator.ofFloat(tagline, View.ALPHA, 0f, 0.9f)
-
-        // Combine animations
-        val animatorSet = AnimatorSet().apply {
+        AnimatorSet().apply {
             playTogether(logoScaleX, logoScaleY, logoAlpha)
             play(nameAlpha).after(logoAlpha)
             play(taglineAlpha).after(nameAlpha)
             duration = 600
             interpolator = AnticipateInterpolator()
+            doOnEnd { viewModel.onAnimationComplete() }
+            start()
         }
-
-        animatorSet.doOnEnd {
-            proceedToNextScreen()
-        }
-
-        animatorSet.start()
     }
 
-    private fun proceedToNextScreen() {
+    private fun observeNavigation() {
         lifecycleScope.launch {
-            // Minimum display time for branding (1.5 seconds total)
-            delay(800)
-
-            // Fetch Remote Config
-            remoteConfigManager.fetchAndActivate()
-
-            // Sync with Firestore
-            userManager.performFullSync()
-
-            // Navigate to appropriate screen
-            val destination = if (profilePreferenceManager.hasUserRegistered()) {
-                SendMailActivity::class.java
-            } else {
-                OnboardingActivity::class.java
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.navigation.collect { destination ->
+                    when (destination) {
+                        SplashNavigation.ToOnboarding -> navigateTo(OnboardingActivity::class.java)
+                        SplashNavigation.ToMain -> navigateTo(SendMailActivity::class.java)
+                        SplashNavigation.Idle -> {}
+                    }
+                }
             }
-
-            startActivity(Intent(this@SplashActivity, destination))
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-            finish()
         }
+    }
+
+    private fun navigateTo(destination: Class<*>) {
+        startActivity(Intent(this, destination))
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        finish()
     }
 }
