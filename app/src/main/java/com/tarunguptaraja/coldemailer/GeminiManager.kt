@@ -27,6 +27,10 @@ class GeminiManager @Inject constructor(
     private val remoteConfigManager: RemoteConfigManager
 ) {
 
+    private fun getCurrentDate(): String {
+        return java.text.SimpleDateFormat("MMMM yyyy", java.util.Locale.US).format(java.util.Date())
+    }
+
     private fun getGenerativeModel(): GenerativeModel {
         var modelName = remoteConfigManager.getGeminiModelName()
         if (modelName.isBlank()) modelName = "gemini-2.5-flash"
@@ -70,6 +74,8 @@ class GeminiManager @Inject constructor(
                 - Return ONLY a valid JSON object.
                 - JSON keys: "emails" (array of strings), "company" (string), "role" (string), "atsScore" (number), "atsFeedback" (array of strings), "subject" (string), "initialBody" (string), "followUpBody" (string).
                 - Use \n for newlines in the body strings.
+                
+                Note: Today\'s date is ${getCurrentDate()}. Use this to calculate accurate work durations if you see "present" in the resume.
             """.trimIndent()
 
             val content = if (input is Bitmap) {
@@ -163,6 +169,8 @@ class GeminiManager @Inject constructor(
                 - Return ONLY a valid JSON object.
                 - JSON keys: "score" (number), "summary" (string), "strengths" (array of strings), "weaknesses" (array of strings), "missingKeywords" (array of strings), "improvementTips" (array of strings).
                 - Use \n for newlines in the strings.
+                
+                Note: Today\'s date is ${getCurrentDate()}. Use this to calculate accurate work durations if you see "present" in the resume.
             """.trimIndent()
 
             val content = content {
@@ -272,6 +280,8 @@ class GeminiManager @Inject constructor(
                 - Each question object must have: "id" (string), "question" (string), "expectedAnswer" (string), "category" (string), "difficulty" (string).
                 - IDs should be "q1", "q2", "q3", etc.
                 - Use \n for newlines in strings.
+                
+                Note: Today\'s date is ${getCurrentDate()}.
             """.trimIndent()
 
             val content = content {
@@ -512,6 +522,8 @@ class GeminiManager @Inject constructor(
                 - Return ONLY a valid JSON array of topic objects.
                 - Each topic object must have: "id" (string like "topic1", "topic2"), "name" (string - topic title), "description" (string - what this topic covers).
                 - Example: [{"id": "topic1", "name": "Android Architecture", "description": "MVP, MVVM, Clean Architecture patterns"}]
+                
+                Note: Today\'s date is ${getCurrentDate()}.
             """.trimIndent()
 
             val content = content {
@@ -630,6 +642,8 @@ class GeminiManager @Inject constructor(
                 - Return ONLY a valid JSON object.
                 - JSON keys: "id" (string), "question" (string - the actual question text), "expectedAnswer" (string - key points a good answer should cover), "category" (string - Technical/Behavioral/HR), "difficulty" (string - Easy/Medium/Hard).
                 - The question should feel like a natural follow-up in a conversation.
+                
+                Note: Today\'s date is ${getCurrentDate()}.
             """.trimIndent()
 
             val content = content {

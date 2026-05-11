@@ -209,4 +209,7 @@ class SendMailViewModel @Inject constructor(
             )
         }
     }
+    fun clearAnalysisError() {
+        _uiState.value = _uiState.value.copy(analysisError = null)
+    }
 }

@@ -127,7 +127,8 @@ class SendMailActivity : AppCompatActivity() {
                     )
                     viewModel.saveSentHistory(emailText)
                 } else {
-                    Toast.makeText(this, "No resume found for this role", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "No resume found for this role. Please add a role with resume.", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(this, MainActivity::class.java))
                 }
             }
         }
@@ -227,6 +228,11 @@ class SendMailActivity : AppCompatActivity() {
 
                     state.analysisError?.let {
                         Toast.makeText(this@SendMailActivity, it, Toast.LENGTH_LONG).show()
+                        val isProfileError = it.contains("profile", ignoreCase = true) || it.contains("role", ignoreCase = true)
+                        viewModel.clearAnalysisError()
+                        if (isProfileError) {
+                            startActivity(Intent(this@SendMailActivity, MainActivity::class.java))
+                        }
                     }
                 }
             }

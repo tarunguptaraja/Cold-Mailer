@@ -111,6 +111,16 @@ class MainActivity : AppCompatActivity() {
                     // Role List
                     renderRoles(state.roles)
                     
+                    // Pulse animation for Add Role button if no roles
+                    if (state.roles.isEmpty()) {
+                        if (binding.btnAddRole.animation == null) {
+                            val pulse = android.view.animation.AnimationUtils.loadAnimation(this@MainActivity, R.anim.pulse)
+                            binding.btnAddRole.startAnimation(pulse)
+                        }
+                    } else {
+                        binding.btnAddRole.clearAnimation()
+                    }
+                    
                     // Editor Visibility
                     val isEditing = state.currentRoleId != null
                     binding.roleEditor.visibility = if (isEditing) View.VISIBLE else View.GONE

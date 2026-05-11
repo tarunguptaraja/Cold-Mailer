@@ -82,7 +82,7 @@
     <!-- Send Email Activity -->
     <string name="label_active_profile">Active Profile</string>
     <string name="hint_select_role">Select Your Role</string>
-    <string name="default_role">Default Role</string>
+    <string name="default_role">Add Role in Profile</string>
     <string name="hint_jd_url_text">Paste JD URL or Text</string>
     <string name="label_email_tone">Email Tone</string>
     <string name="tone_professional">Professional</string>
