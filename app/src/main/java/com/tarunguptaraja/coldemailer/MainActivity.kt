@@ -116,7 +116,7 @@ class MainActivity : AppCompatActivity() {
                     binding.roleEditor.visibility = if (isEditing) View.VISIBLE else View.GONE
                     binding.editorBottomPanel.visibility = if (isEditing) View.VISIBLE else View.GONE
                     binding.roleListContainer.visibility = if (isEditing) View.GONE else View.VISIBLE
-                    binding.bottomPanel.visibility = if (isEditing) View.GONE else View.VISIBLE
+                    binding.bottomPanel.visibility = if (isEditing || !state.hasChanges) View.GONE else View.VISIBLE
                     
                     // Role Editor Data
                     if (isEditing) {

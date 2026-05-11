@@ -20,7 +20,9 @@ import javax.inject.Inject
 
 data class ProfileUiState(
     val name: String = "",
+    val originalName: String = "",
     val contactNumber: String = "",
+    val originalContactNumber: String = "",
     val roles: List<JobRole> = emptyList(),
     val currentRoleId: String? = null,
     val currentRoleName: String = "",
@@ -31,6 +33,7 @@ data class ProfileUiState(
     val isLoading: Boolean = false,
     val message: String? = null,
     val isProfileSaved: Boolean = false,
+    val hasChanges: Boolean = false,
     val remainingTokens: Long = 100000L,
     val transactions: List<com.tarunguptaraja.coldemailer.domain.model.TokenTransaction> = emptyList()
 )
@@ -71,7 +74,9 @@ class ProfileViewModel @Inject constructor(
         profile?.let {
             _uiState.value = _uiState.value.copy(
                 name = it.name,
+                originalName = it.name,
                 contactNumber = it.contactNumber,
+                originalContactNumber = it.contactNumber,
                 roles = it.roles,
                 remainingTokens = tokenManager.getRemainingTokens()
             )
@@ -87,11 +92,19 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun onNameChanged(name: String) {
-        _uiState.value = _uiState.value.copy(name = name)
+        val state = _uiState.value
+        _uiState.value = state.copy(
+            name = name,
+            hasChanges = name != state.originalName || state.contactNumber != state.originalContactNumber
+        )
     }
 
     fun onContactNumberChanged(number: String) {
-        _uiState.value = _uiState.value.copy(contactNumber = number)
+        val state = _uiState.value
+        _uiState.value = state.copy(
+            contactNumber = number,
+            hasChanges = state.name != state.originalName || number != state.originalContactNumber
+        )
     }
 
     fun onRoleNameChanged(name: String) {
@@ -202,7 +215,13 @@ class ProfileViewModel @Inject constructor(
 
     fun saveProfileInfo() {
         saveProfile()
-        _uiState.value = _uiState.value.copy(message = "Profile information updated")
+        val state = _uiState.value
+        _uiState.value = state.copy(
+            originalName = state.name,
+            originalContactNumber = state.contactNumber,
+            hasChanges = false,
+            message = "Profile information updated"
+        )
     }
 
     fun clearMessage() {

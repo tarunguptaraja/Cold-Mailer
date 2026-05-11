@@ -30,7 +30,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-            
+
         <TextView
             android:id="@+id/tv_tokens"
             android:layout_width="wrap_content"
@@ -63,6 +63,7 @@
             android:padding="@dimen/_16sdp">
 
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/_16sdp"
@@ -70,21 +71,21 @@
                 app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
                 app:boxCornerRadiusBottomStart="@dimen/_8sdp"
                 app:boxCornerRadiusTopEnd="@dimen/_8sdp"
-                app:boxCornerRadiusTopStart="@dimen/_8sdp"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+                app:boxCornerRadiusTopStart="@dimen/_8sdp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingTop="@dimen/_12sdp"
-                    android:paddingBottom="@dimen/_12sdp"
                     android:fontFamily="@font/montserrat"
                     android:inputType="textPersonName"
+                    android:paddingTop="@dimen/_12sdp"
+                    android:paddingBottom="@dimen/_12sdp"
                     android:textSize="@dimen/_13sdp" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/_16sdp"
@@ -92,26 +93,25 @@
                 app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
                 app:boxCornerRadiusBottomStart="@dimen/_8sdp"
                 app:boxCornerRadiusTopEnd="@dimen/_8sdp"
-                app:boxCornerRadiusTopStart="@dimen/_8sdp"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+                app:boxCornerRadiusTopStart="@dimen/_8sdp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_contact_number"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingTop="@dimen/_12sdp"
-                    android:paddingBottom="@dimen/_12sdp"
                     android:fontFamily="@font/montserrat"
                     android:inputType="phone"
+                    android:paddingTop="@dimen/_12sdp"
+                    android:paddingBottom="@dimen/_12sdp"
                     android:textSize="@dimen/_13sdp" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_12sdp"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:layout_marginBottom="@dimen/_12sdp">
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="0dp"
@@ -136,30 +136,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_24sdp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:fontFamily="@font/montserrat_bold"
-                    android:text="@string/label_token_usage"
-                    android:textColor="@color/colorTextPrimary"
-                    android:textSize="@dimen/_15sdp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_view_history"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/btn_view_history" />
-            </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
@@ -169,8 +145,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="@color/colorSurface"
-        android:visibility="gone"
         android:elevation="@dimen/_12sdp"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/editor_bottom_panel"
         app:layout_constraintTop_toBottomOf="@id/app_bar">
 
@@ -189,18 +165,18 @@
                     android:id="@+id/tv_editor_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/_16sdp"
                     android:fontFamily="@font/montserrat_bold"
                     android:text="@string/title_create_role"
                     android:textColor="@color/colorPrimary"
-                    android:textSize="@dimen/_16sdp"
-                    android:layout_marginBottom="@dimen/_16sdp"/>
+                    android:textSize="@dimen/_16sdp" />
 
                 <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/_12sdp"
-                    android:hint="@string/hint_role_name"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+                    android:hint="@string/hint_role_name">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/et_role_name"
@@ -211,11 +187,11 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/_12sdp"
-                    android:hint="@string/hint_default_subject"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+                    android:hint="@string/hint_default_subject">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/et_subject"
@@ -226,11 +202,11 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/_12sdp"
-                    android:hint="@string/hint_default_body"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+                    android:hint="@string/hint_default_body">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/et_body"
@@ -245,31 +221,31 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_resume_role"
+                    android:layout_marginBottom="@dimen/_8sdp"
                     android:fontFamily="@font/montserrat_bold"
+                    android:text="@string/label_resume_role"
                     android:textColor="@color/colorTextPrimary"
-                    android:textSize="@dimen/_13sdp"
-                    android:layout_marginBottom="@dimen/_8sdp"/>
+                    android:textSize="@dimen/_13sdp" />
 
                 <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Material3.CardView.Outlined"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    style="@style/Widget.Material3.CardView.Outlined"
                     app:cardCornerRadius="@dimen/_8sdp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
                         android:orientation="horizontal"
-                        android:padding="@dimen/_12sdp"
-                        android:gravity="center_vertical">
+                        android:padding="@dimen/_12sdp">
 
                         <ImageView
                             android:layout_width="@dimen/_24sdp"
                             android:layout_height="@dimen/_24sdp"
+                            android:layout_marginEnd="@dimen/_8sdp"
                             android:src="@drawable/ic_resume"
-                            app:tint="@color/colorPrimary"
-                            android:layout_marginEnd="@dimen/_8sdp"/>
+                            app:tint="@color/colorPrimary" />
 
                         <TextView
                             android:id="@+id/tv_resume"
@@ -292,21 +268,48 @@
         </androidx.core.widget.NestedScrollView>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_16sdp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="@+id/role_list_container"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/montserrat_bold"
+            android:text="@string/label_token_usage"
+            android:textColor="@color/colorTextPrimary"
+            android:textSize="@dimen/_15sdp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_view_history"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_view_history" />
+    </LinearLayout>
+
     <FrameLayout
         android:id="@+id/bottom_panel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/_16sdp"
         android:background="@color/colorSurface"
         android:elevation="@dimen/_2sdp"
+        android:padding="@dimen/_16sdp"
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_save_profile"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingVertical="@dimen/_12sdp"
             android:fontFamily="@font/montserrat_bold"
+            android:paddingVertical="@dimen/_12sdp"
             android:text="@string/btn_update_go_dashboard"
             android:textSize="@dimen/_15sdp"
             app:backgroundTint="@color/colorPrimary" />
@@ -316,10 +319,10 @@
         android:id="@+id/editor_bottom_panel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="@dimen/_16sdp"
         android:background="@color/colorSurface"
         android:elevation="@dimen/_12sdp"
+        android:orientation="horizontal"
+        android:padding="@dimen/_16sdp"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation">
 
@@ -328,8 +331,8 @@
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginEnd="@dimen/_8sdp"
+            android:layout_weight="1"
             android:text="@string/btn_cancel" />
 
         <com.google.android.material.button.MaterialButton
@@ -355,8 +358,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/colorSurface"
-        app:menu="@menu/bottom_nav_menu"
         app:labelVisibilityMode="labeled"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
