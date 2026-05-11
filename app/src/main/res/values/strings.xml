@@ -122,10 +122,49 @@
     <string name="version_format">Version %s</string>
     <string name="label_syncing">Syncing...</string>
 
-    <!-- Mock Interview (Coming Soon) -->
+    <!-- Mock Interview -->
     <string name="title_mock_interview">AI Mock Interview</string>
     <string name="subtitle_mock_interview">Practice your interview skills with AI.</string>
     <string name="label_soon">SOON</string>
+    <string name="hint_interview_role">Job Role (e.g. Android Developer)</string>
+    <string name="hint_interview_experience">Your Experience (Years)</string>
+    <string name="hint_job_description">Paste Job Description here…</string>
+    <string name="label_interview_type">Interview Type</string>
+    <string name="type_technical">Technical</string>
+    <string name="type_behavioral">Behavioral</string>
+    <string name="type_hr">HR</string>
+    <string name="type_mixed">Mixed</string>
+    <string name="label_question_count">Number of Questions</string>
+    <string name="btn_start_interview">Start Mock Interview</string>
+    <string name="label_current_question">Question %1$d of %2$d</string>
+    <string name="hint_your_answer">Type your answer here…</string>
+    <string name="btn_speak_question">Listen to Question</string>
+    <string name="btn_record_answer">Record Answer</string>
+    <string name="btn_stop_recording">Stop Recording</string>
+    <string name="btn_submit_answer">Submit Answer</string>
+    <string name="btn_skip_question">Skip</string>
+    <string name="label_listening">Listening…</string>
+    <string name="label_speaking">Speaking…</string>
+    <string name="err_no_answer">Please provide an answer</string>
+    <string name="title_interview_results">Interview Results</string>
+    <string name="label_overall_score">Overall Score</string>
+    <string name="label_question_analysis">Question Analysis</string>
+    <string name="label_suggested_answer">Suggested Answer</string>
+    <string name="btn_retry_interview">Try Another Interview</string>
+    <string name="msg_interview_complete">Interview completed! Generating your report…</string>
+    <string name="label_token_estimate">Token Estimate</string>
+    <string name="label_session_tokens">Session Tokens</string>
+    <string name="label_token_breakdown">Token Usage Breakdown</string>
+    <string name="label_weaknesses">Areas for Improvement</string>
+    <string name="msg_no_jd_selected">No JD file selected</string>
+    <string name="err_permission_microphone">Microphone permission required for voice input</string>
+    <string name="btn_silence_tts">Silence</string>
+    <string name="label_follow_up">Follow-up</string>
+    <string name="msg_planning_topics">Planning interview topics...</string>
+    <string name="msg_generating_question">Generating next question...</string>
+    <string name="msg_generating_follow_up">Generating follow-up question...</string>
+    <string name="msg_evaluating_answer">Evaluating your answer...</string>
+    <string name="msg_generating_report">Generating final interview report...</string>
     <string name="title_profile_settings">Profile &amp; Settings</string>
     <string name="subtitle_profile_settings">Manage your details and job roles.</string>
 

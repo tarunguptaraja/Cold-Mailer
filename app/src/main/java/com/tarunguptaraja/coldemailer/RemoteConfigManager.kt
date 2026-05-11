@@ -13,7 +13,7 @@ class RemoteConfigManager @Inject constructor() {
 
     init {
         val configSettings = FirebaseRemoteConfigSettings.Builder()
-            .setMinimumFetchIntervalInSeconds(3600) // 1 hour for prod, 0 for dev
+            .setMinimumFetchIntervalInSeconds(0) // 0 for immediate updates during dev
             .build()
         remoteConfig.setConfigSettingsAsync(configSettings)
         
@@ -21,7 +21,9 @@ class RemoteConfigManager @Inject constructor() {
         remoteConfig.setDefaultsAsync(
             mapOf(
                 "onboarding_tokens" to 100000L,
-                "gemini_model_name" to "gemini-2.5-flash"
+                "gemini_model_name" to "gemini-2.5-flash",
+                "interview_base_tokens" to 800L,
+                "interview_tokens_per_question" to 700L
             )
         )
     }
@@ -40,5 +42,13 @@ class RemoteConfigManager @Inject constructor() {
 
     fun getGeminiModelName(): String {
         return remoteConfig.getString("gemini_model_name")
+    }
+
+    fun getInterviewBaseTokens(): Long {
+        return remoteConfig.getLong("interview_base_tokens")
+    }
+
+    fun getInterviewTokensPerQuestion(): Long {
+        return remoteConfig.getLong("interview_tokens_per_question")
     }
 }

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/_8sdp"
+    app:cardCornerRadius="@dimen/_8sdp"
+    app:cardElevation="@dimen/_2sdp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/_12sdp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tv_question_number"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/montserrat_bold"
+                android:text="Question 1"
+                android:textColor="@color/colorTextPrimary"
+                android:textSize="@dimen/_14sdp" />
+
+            <TextView
+                android:id="@+id/tv_score"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/montserrat_bold"
+                android:text="85/100"
+                android:textColor="#4CAF50"
+                android:textSize="@dimen/_14sdp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_feedback"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_8sdp"
+            android:fontFamily="@font/montserrat"
+            android:text="Good answer with clear explanation. Could include more technical details."
+            android:textColor="@color/colorTextPrimary"
+            android:textSize="@dimen/_12sdp" />
+
+        <TextView
+            android:id="@+id/tv_suggested_answer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_8sdp"
+            android:fontFamily="@font/montserrat"
+            android:text="Suggested: A more comprehensive answer would include..."
+            android:textColor="@color/colorTextSecondary"
+            android:textSize="@dimen/_11sdp"
+            android:visibility="gone" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -28,11 +28,22 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <ImageView
+            android:id="@+id/btn_history"
+            android:layout_width="@dimen/_24sdp"
+            android:layout_height="@dimen/_24sdp"
+            android:layout_marginEnd="@dimen/_12sdp"
+            android:src="@drawable/ic_history"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/white" />
+
         <TextView
             android:id="@+id/tv_tokens"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/_12sdp"
+            android:layout_marginEnd="@dimen/_8sdp"
             android:background="@drawable/bg_token_chip"
             android:fontFamily="@font/montserrat_bold"
             android:paddingHorizontal="@dimen/_8sdp"
@@ -41,46 +52,994 @@
             android:textColor="@color/white"
             android:textSize="@dimen/_10sdp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btn_history"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <!-- ==================== SETUP SCREEN ==================== -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/setup_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingBottom="@dimen/_80sdp"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+        app:layout_constraintTop_toBottomOf="@id/app_bar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/_16sdp">
+
+            <!-- Job Details Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_16sdp"
+                app:cardCornerRadius="@dimen/_12sdp"
+                app:cardElevation="@dimen/_2sdp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_16sdp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_12sdp"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="Job Details"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/_15sdp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_12sdp"
+                        android:hint="Job Role (e.g. Android Developer)">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_job_role"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat"
+                            android:inputType="text" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_12sdp"
+                        android:hint="Your Experience (Years)">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_experience"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat"
+                            android:inputType="number" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Job Description Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_16sdp"
+                app:cardCornerRadius="@dimen/_12sdp"
+                app:cardElevation="@dimen/_2sdp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_16sdp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_8sdp"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="Job Description (Optional)"
+                        android:textColor="@color/colorTextPrimary"
+                        android:textSize="@dimen/_13sdp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_8sdp"
+                        android:fontFamily="@font/montserrat"
+                        android:text="AI will infer requirements from your role if not provided"
+                        android:textColor="@color/colorTextSecondary"
+                        android:textSize="@dimen/_11sdp" />
+
+                    <!-- JD File Upload -->
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Material3.CardView.Outlined"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_12sdp"
+                        app:cardCornerRadius="@dimen/_8sdp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="@dimen/_12sdp">
+
+                            <ImageView
+                                android:layout_width="@dimen/_24sdp"
+                                android:layout_height="@dimen/_24sdp"
+                                android:layout_marginEnd="@dimen/_8sdp"
+                                android:src="@drawable/ic_resume"
+                                app:tint="@color/colorPrimary" />
+
+                            <TextView
+                                android:id="@+id/tv_jd_file_name"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/montserrat"
+                                android:text="No JD file selected"
+                                android:textColor="@color/colorTextPrimary" />
+
+                            <ImageButton
+                                android:id="@+id/btn_clear_jd"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:padding="@dimen/_4sdp"
+                                android:src="@drawable/ic_delete"
+                                android:visibility="gone"
+                                app:tint="@color/colorTextSecondary" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btn_upload_jd"
+                                style="@style/Widget.Material3.Button.TextButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Upload" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_8sdp"
+                        android:fontFamily="@font/montserrat"
+                        android:text="Or paste JD text:"
+                        android:textColor="@color/colorTextSecondary"
+                        android:textSize="@dimen/_12sdp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Paste Job Description here...">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_job_description"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat"
+                            android:gravity="top"
+                            android:inputType="textMultiLine"
+                            android:maxLines="8"
+                            android:minLines="4" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Resume Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_16sdp"
+                app:cardCornerRadius="@dimen/_12sdp"
+                app:cardElevation="@dimen/_2sdp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_16sdp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_8sdp"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="Your Resume"
+                        android:textColor="@color/colorTextPrimary"
+                        android:textSize="@dimen/_13sdp" />
+
+                    <!-- Resume File Upload -->
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Material3.CardView.Outlined"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_12sdp"
+                        app:cardCornerRadius="@dimen/_8sdp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="@dimen/_12sdp">
+
+                            <ImageView
+                                android:layout_width="@dimen/_24sdp"
+                                android:layout_height="@dimen/_24sdp"
+                                android:layout_marginEnd="@dimen/_8sdp"
+                                android:src="@drawable/ic_resume"
+                                app:tint="@color/colorPrimary" />
+
+                            <TextView
+                                android:id="@+id/tv_resume_file_name"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/montserrat"
+                                android:text="No resume selected"
+                                android:textColor="@color/colorTextPrimary" />
+
+                            <ImageButton
+                                android:id="@+id/btn_clear_resume"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:padding="@dimen/_4sdp"
+                                android:src="@drawable/ic_delete"
+                                android:visibility="gone"
+                                app:tint="@color/colorTextSecondary" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btn_upload_resume"
+                                style="@style/Widget.Material3.Button.TextButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Upload" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_8sdp"
+                        android:fontFamily="@font/montserrat"
+                        android:text="Or paste resume text:"
+                        android:textColor="@color/colorTextSecondary"
+                        android:textSize="@dimen/_12sdp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Paste Resume text here...">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_resume_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat"
+                            android:gravity="top"
+                            android:inputType="textMultiLine"
+                            android:maxLines="8"
+                            android:minLines="4" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Interview Settings -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_16sdp"
+                app:cardCornerRadius="@dimen/_12sdp"
+                app:cardElevation="@dimen/_2sdp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_16sdp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_12sdp"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="Interview Settings"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/_15sdp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_8sdp"
+                        android:fontFamily="@font/montserrat"
+                        android:text="Interview Type"
+                        android:textColor="@color/colorTextPrimary"
+                        android:textSize="@dimen/_12sdp" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chip_group_interview_type"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_12sdp"
+                        app:checkedChip="@id/chip_mixed"
+                        app:singleSelection="true">
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_technical"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Technical" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_behavioral"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Behavioral" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_hr"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="HR" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_mixed"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Mixed" />
+                    </com.google.android.material.chip.ChipGroup>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/_8sdp"
+                        android:fontFamily="@font/montserrat"
+                        android:text="Number of Questions"
+                        android:textColor="@color/colorTextPrimary"
+                        android:textSize="@dimen/_12sdp" />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/slider_question_count"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:stepSize="5.0"
+                        android:value="10.0"
+                        android:valueFrom="5.0"
+                        android:valueTo="30.0" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_4sdp"
+                        android:fontFamily="@font/montserrat"
+                        android:text="AI adapts based on conversation flow"
+                        android:textColor="@color/colorTextSecondary"
+                        android:textSize="@dimen/_10sdp" />
+
+                    <TextView
+                        android:id="@+id/tv_question_count_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="10 Questions"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/_14sdp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Error Message -->
+            <TextView
+                android:id="@+id/tv_error"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_16sdp"
+                android:fontFamily="@font/montserrat"
+                android:textColor="#F44336"
+                android:textSize="@dimen/_12sdp"
+                android:visibility="gone" />
+
+            <!-- Start Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_start_interview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_32sdp"
+                android:fontFamily="@font/montserrat_bold"
+                android:paddingVertical="@dimen/_12sdp"
+                android:text="Start Mock Interview"
+                android:textSize="@dimen/_14sdp"
+                app:cornerRadius="@dimen/_8sdp" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- ==================== LOADING SCREEN ==================== -->
     <LinearLayout
+        android:id="@+id/loading_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="@dimen/_24sdp"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
         app:layout_constraintTop_toBottomOf="@id/app_bar">
 
-        <ImageView
-            android:layout_width="@dimen/_150sdp"
-            android:layout_height="@dimen/_150sdp"
-            android:layout_marginBottom="@dimen/_24sdp"
-            android:src="@android:drawable/ic_btn_speak_now"
-            app:tint="@color/colorPrimary" />
-
-        <TextView
+        <ProgressBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/montserrat_bold"
-            android:text="Coming Soon!"
-            android:textColor="@color/colorPrimary"
-            android:textSize="@dimen/_22sdp" />
+            android:layout_marginBottom="@dimen/_16sdp" />
 
         <TextView
-            android:layout_width="match_parent"
+            android:id="@+id/tv_loading_message"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/_12sdp"
             android:fontFamily="@font/montserrat"
-            android:gravity="center"
-            android:text="We are building an AI-powered mock interview system to help you practice your job roles and improve your performance."
-            android:textColor="@color/colorTextSecondary"
+            android:text="Generating questions..."
+            android:textColor="@color/colorTextPrimary"
             android:textSize="@dimen/_14sdp" />
-
     </LinearLayout>
 
+    <!-- ==================== INTERVIEW SCREEN ==================== -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/interview_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+        app:layout_constraintTop_toBottomOf="@id/app_bar">
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/interview_scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:fillViewport="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <!-- Progress Section -->
+                <LinearLayout
+                    android:id="@+id/progress_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/_16sdp"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                        android:id="@+id/progress_indicator"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/_12sdp"
+                        android:layout_weight="1"
+                        app:trackThickness="@dimen/_8sdp" />
+
+                    <TextView
+                        android:id="@+id/tv_progress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="1/5"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/_14sdp" />
+                </LinearLayout>
+
+                <!-- Session Tokens -->
+                <TextView
+                    android:id="@+id/tv_session_tokens"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/_16sdp"
+                    android:fontFamily="@font/montserrat"
+                    android:text="Session Tokens: 0"
+                    android:textColor="@color/colorTextSecondary"
+                    android:textSize="@dimen/_11sdp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/progress_section" />
+
+                <!-- Question Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/question_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/_16sdp"
+                    app:cardCornerRadius="@dimen/_12sdp"
+                    app:cardElevation="@dimen/_4sdp"
+                    app:layout_constraintTop_toBottomOf="@id/tv_session_tokens"
+                    app:strokeWidth="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/_20sdp">
+
+                        <TextView
+                            android:id="@+id/tv_category"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/_8sdp"
+                            android:background="@drawable/bg_category_chip"
+                            android:fontFamily="@font/montserrat_bold"
+                            android:paddingHorizontal="@dimen/_8sdp"
+                            android:paddingVertical="@dimen/_4sdp"
+                            android:text="Technical"
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/_10sdp" />
+
+                        <TextView
+                            android:id="@+id/tv_question"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/montserrat_bold"
+                            android:text="What is the difference between MVP and MVVM architecture patterns?"
+                            android:textColor="@color/colorTextPrimary"
+                            android:textSize="@dimen/_12sdp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/_8sdp"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btn_speak_question"
+                                style="@style/Widget.Material3.Button.TextButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Listen to Question"
+                                app:icon="@android:drawable/ic_media_play" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btn_silence_tts"
+                                style="@style/Widget.Material3.Button.TextButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Silence"
+                                android:visibility="gone"
+                                app:icon="@android:drawable/ic_lock_silent_mode" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Answer Section -->
+                <LinearLayout
+                    android:id="@+id/answer_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_16sdp"
+                    app:layout_constraintBottom_toTopOf="@id/interview_buttons"
+                    app:layout_constraintTop_toBottomOf="@id/question_card"
+                    app:layout_constraintVertical_bias="0.0">
+
+                    <!-- Voice Answer Container (Default) -->
+                    <LinearLayout
+                        android:id="@+id/voice_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="@dimen/_24sdp"
+                        android:visibility="visible">
+
+                        <TextView
+                            android:id="@+id/tv_voice_status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/_16sdp"
+                            android:fontFamily="@font/montserrat"
+                            android:text="Tap microphone to start speaking"
+                            android:textColor="@color/colorTextSecondary"
+                            android:textSize="@dimen/_14sdp" />
+
+                        <com.google.android.material.floatingactionbutton.FloatingActionButton
+                            android:id="@+id/btn_record"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@android:drawable/ic_btn_speak_now"
+                            app:backgroundTint="@color/colorPrimary"
+                            app:fabCustomSize="@dimen/_72sdp"
+                            app:maxImageSize="@dimen/_36sdp"
+                            app:tint="@color/white" />
+
+                        <TextView
+                            android:id="@+id/tv_recorded_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/_16sdp"
+                            android:fontFamily="@font/montserrat"
+                            android:gravity="center"
+                            android:textColor="@color/colorTextPrimary"
+                            android:textSize="@dimen/_14sdp"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/btn_switch_to_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/_24sdp"
+                            android:background="?attr/selectableItemBackground"
+                            android:fontFamily="@font/montserrat_semi_bold"
+                            android:padding="@dimen/_8sdp"
+                            android:text="Switch to Keyboard"
+                            android:textColor="@color/colorPrimary"
+                            android:textSize="@dimen/_14sdp" />
+                    </LinearLayout>
+
+                    <!-- Text Answer Input -->
+                    <LinearLayout
+                        android:id="@+id/text_input_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Type your answer here...">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/et_answer"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/montserrat"
+                                android:gravity="top"
+                                android:inputType="textMultiLine"
+                                android:minLines="6" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <TextView
+                            android:id="@+id/btn_switch_to_voice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_marginTop="@dimen/_12sdp"
+                            android:background="?attr/selectableItemBackground"
+                            android:fontFamily="@font/montserrat_semi_bold"
+                            android:padding="@dimen/_8sdp"
+                            android:text="Switch to Voice"
+                            android:textColor="@color/colorPrimary"
+                            android:textSize="@dimen/_14sdp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/interview_buttons"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/_16sdp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/answer_section"
+                    app:layout_constraintVertical_bias="1.0">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_skip"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/_8sdp"
+                        android:layout_weight="1"
+                        android:text="Skip" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_submit"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="Submit Answer" />
+                </LinearLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.core.widget.NestedScrollView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- ==================== EVALUATING SCREEN ==================== -->
+    <LinearLayout
+        android:id="@+id/evaluating_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+        app:layout_constraintTop_toBottomOf="@id/app_bar">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/_16sdp" />
+
+        <TextView
+            android:id="@+id/tv_evaluating_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/montserrat"
+            android:text="Evaluating your answers..."
+            android:textColor="@color/colorTextPrimary"
+            android:textSize="@dimen/_14sdp" />
+
+        <TextView
+            android:id="@+id/tv_evaluating_tokens"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_8sdp"
+            android:fontFamily="@font/montserrat"
+            android:text="Session tokens used: 0"
+            android:textColor="@color/colorTextSecondary"
+            android:textSize="@dimen/_12sdp" />
+    </LinearLayout>
+
+    <!-- ==================== RESULTS SCREEN ==================== -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/results_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingBottom="@dimen/_80sdp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+        app:layout_constraintTop_toBottomOf="@id/app_bar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/_16sdp">
+
+            <!-- Overall Score Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_16sdp"
+                app:cardCornerRadius="@dimen/_12sdp"
+                app:cardElevation="@dimen/_2sdp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_24sdp">
+
+                    <FrameLayout
+                        android:layout_width="@dimen/_120sdp"
+                        android:layout_height="@dimen/_120sdp">
+
+                        <ProgressBar
+                            android:id="@+id/score_progress"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:indeterminate="false"
+                            android:max="100"
+                            android:progress="75"
+                            android:progressDrawable="@drawable/circular_progress_bar" />
+
+                        <TextView
+                            android:id="@+id/tv_final_score"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:fontFamily="@font/montserrat_bold"
+                            android:text="75"
+                            android:textColor="@color/colorPrimary"
+                            android:textSize="@dimen/_28sdp" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_8sdp"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="Overall Score"
+                        android:textColor="@color/colorTextSecondary"
+                        android:textSize="@dimen/_14sdp" />
+
+                    <TextView
+                        android:id="@+id/tv_total_tokens"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_8sdp"
+                        android:fontFamily="@font/montserrat"
+                        android:text="Total tokens used: 2,450"
+                        android:textColor="@color/colorTextSecondary"
+                        android:textSize="@dimen/_12sdp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Token Breakdown -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_16sdp"
+                app:cardCornerRadius="@dimen/_12sdp"
+                app:cardElevation="@dimen/_2sdp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#E3F2FD"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_16sdp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="Token Usage Breakdown"
+                        android:textColor="#1976D2"
+                        android:textSize="@dimen/_14sdp" />
+
+                    <TextView
+                        android:id="@+id/tv_token_breakdown"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_8sdp"
+                        android:fontFamily="@font/montserrat"
+                        android:text="Question Generation: 450\nAnswer Evaluations: 1,500\nFinal Report: 500"
+                        android:textColor="@color/colorTextPrimary"
+                        android:textSize="@dimen/_12sdp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Strengths -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_8sdp"
+                android:fontFamily="@font/montserrat_bold"
+                android:text="Strengths"
+                android:textColor="@color/colorTextPrimary"
+                android:textSize="@dimen/_14sdp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_8sdp"
+                app:cardCornerRadius="@dimen/_8sdp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_12sdp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawablePadding="@dimen/_8sdp"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="Key Strengths"
+                        android:textColor="#4CAF50"
+                        app:drawableStartCompat="@drawable/ic_check_circle"
+                        app:drawableTint="#4CAF50" />
+
+                    <TextView
+                        android:id="@+id/tv_strengths"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_4sdp"
+                        android:fontFamily="@font/montserrat"
+                        android:text="• Strong technical knowledge\n• Clear communication\n• Good problem-solving approach"
+                        android:textColor="@color/colorTextPrimary" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Weaknesses -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_8sdp"
+                android:layout_marginBottom="@dimen/_8sdp"
+                android:fontFamily="@font/montserrat_bold"
+                android:text="Areas for Improvement"
+                android:textColor="@color/colorTextPrimary"
+                android:textSize="@dimen/_14sdp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_16sdp"
+                app:cardCornerRadius="@dimen/_8sdp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_12sdp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawablePadding="@dimen/_8sdp"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="Areas to Improve"
+                        android:textColor="#F44336"
+                        app:drawableStartCompat="@drawable/ic_alert_circle"
+                        app:drawableTint="#F44336" />
+
+                    <TextView
+                        android:id="@+id/tv_weaknesses"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_4sdp"
+                        android:fontFamily="@font/montserrat"
+                        android:text="• Provide more specific examples\n• Elaborate on technical details\n• Structure answers better"
+                        android:textColor="@color/colorTextPrimary" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Question Analysis -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_8sdp"
+                android:fontFamily="@font/montserrat_bold"
+                android:text="Question Analysis"
+                android:textColor="@color/colorTextPrimary"
+                android:textSize="@dimen/_14sdp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_question_analysis"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_16sdp"
+                android:nestedScrollingEnabled="false" />
+
+            <!-- Retry Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_retry"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_32sdp"
+                android:text="Try Another Interview" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- MAIN LOADING OVERLAY -->
+    <ProgressBar
+        android:id="@+id/progress_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- BOTTOM NAVIGATION -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"

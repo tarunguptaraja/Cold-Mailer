@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.tarunguptaraja.coldemailer.domain.model.JobRole
 import com.tarunguptaraja.coldemailer.domain.model.Profile
+import com.tarunguptaraja.coldemailer.domain.model.InterviewHistoryRecord
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -30,6 +31,7 @@ class ProfilePreferenceManager @Inject constructor(@ApplicationContext context: 
         private const val KEY_RESUME_TEXT = "resumeText"
         private const val KEY_LAST_UPDATED = "lastUpdated"
         private const val KEY_TRANSACTIONS_JSON = "transactionsJson"
+        private const val KEY_INTERVIEW_HISTORY_JSON = "interviewHistoryJson"
     }
 
     private val json = Json { ignoreUnknownKeys = true }
@@ -84,6 +86,27 @@ class ProfilePreferenceManager @Inject constructor(@ApplicationContext context: 
         val current = getTransactions().toMutableList()
         current.add(0, transaction) // Add to top
         saveTransactions(current)
+    }
+
+    fun saveInterviewHistory(history: List<InterviewHistoryRecord>) {
+        sharedPreferences.edit {
+            putString(KEY_INTERVIEW_HISTORY_JSON, json.encodeToString(history))
+        }
+    }
+
+    fun getInterviewHistory(): List<InterviewHistoryRecord> {
+        val jsonStr = sharedPreferences.getString(KEY_INTERVIEW_HISTORY_JSON, null) ?: return emptyList()
+        return try {
+            json.decodeFromString(jsonStr)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    fun addInterviewHistoryRecord(record: InterviewHistoryRecord) {
+        val current = getInterviewHistory().toMutableList()
+        current.add(0, record)
+        saveInterviewHistory(current)
     }
 
     private fun migrateLegacyData(): List<JobRole> {

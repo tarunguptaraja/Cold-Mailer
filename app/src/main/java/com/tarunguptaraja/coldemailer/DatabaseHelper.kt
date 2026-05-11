@@ -13,7 +13,7 @@ import javax.inject.Singleton
 class DatabaseHelper @Inject constructor(@ApplicationContext context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
-        private const val DATABASE_VERSION = 3
+        private const val DATABASE_VERSION = 5
         private const val DATABASE_NAME = "ColdEmailerHistory.db"
         const val TABLE_HISTORY = "history"
         const val COLUMN_ID = "_id"
@@ -39,6 +39,10 @@ class DatabaseHelper @Inject constructor(@ApplicationContext context: Context) :
                 + COLUMN_ROLE_NAME + " TEXT,"
                 + COLUMN_STATUS + " TEXT" + ")")
         db.execSQL(createTable)
+    }
+
+    override fun onDowngrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        // Prevent crash on downgrade
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
