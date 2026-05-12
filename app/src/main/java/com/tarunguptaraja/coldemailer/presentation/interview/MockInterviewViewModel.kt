@@ -223,6 +223,15 @@ class MockInterviewViewModel @Inject constructor(
                     ""
                 }
 
+                // Generate context summaries first
+                val resumeSummaryResult = if (resumeText.isNotBlank()) geminiManager.summarizeResume(resumeText) else null
+                val jdSummaryResult = if (jdText.isNotBlank()) geminiManager.summarizeJobDescription(jdText) else null
+
+                val resumeSummary = resumeSummaryResult?.first
+                val jdSummary = jdSummaryResult?.first
+                
+                val summarizationTokens = (resumeSummaryResult?.second ?: 0) + (jdSummaryResult?.second ?: 0)
+
                 // Create config
                 val config = InterviewConfig(
                     jobRole = state.jobRole,
@@ -230,7 +239,9 @@ class MockInterviewViewModel @Inject constructor(
                     jobDescription = jdText,
                     resumeText = resumeText,
                     interviewType = state.interviewType,
-                    questionCount = state.questionCount
+                    questionCount = state.questionCount,
+                    resumeSummary = resumeSummary,
+                    jobSpecSummary = jdSummary
                 )
 
                 // Generate interview topics
@@ -243,7 +254,7 @@ class MockInterviewViewModel @Inject constructor(
 
                 // Update token breakdown
                 _tokenBreakdown.value = _tokenBreakdown.value.copy(
-                    topicGeneration = topicsResult.tokensUsed
+                    topicGeneration = topicsResult.tokensUsed + summarizationTokens
                 )
 
                 // Initialize session state
@@ -354,7 +365,9 @@ class MockInterviewViewModel @Inject constructor(
                     jobDescription = _setupState.value.jobDescriptionText,
                     resumeText = _setupState.value.resumeText,
                     interviewType = _setupState.value.interviewType,
-                    questionCount = _setupState.value.questionCount
+                    questionCount = _setupState.value.questionCount,
+                    resumeSummary = null,
+                    jobSpecSummary = null
                 ),
                 question = currentQuestion,
                 answer = answer,
@@ -411,7 +424,9 @@ class MockInterviewViewModel @Inject constructor(
                             jobDescription = _setupState.value.jobDescriptionText,
                             resumeText = _setupState.value.resumeText,
                             interviewType = _setupState.value.interviewType,
-                            questionCount = _setupState.value.questionCount
+                            questionCount = _setupState.value.questionCount,
+                            resumeSummary = null,
+                            jobSpecSummary = null
                         ),
                         sessionState = sessionWithNextTopic
                     )
@@ -423,7 +438,9 @@ class MockInterviewViewModel @Inject constructor(
                             jobDescription = _setupState.value.jobDescriptionText,
                             resumeText = _setupState.value.resumeText,
                             interviewType = _setupState.value.interviewType,
-                            questionCount = _setupState.value.questionCount
+                            questionCount = _setupState.value.questionCount,
+                            resumeSummary = null,
+                            jobSpecSummary = null
                         ),
                         sessionState = sessionWithNextTopic
                     )

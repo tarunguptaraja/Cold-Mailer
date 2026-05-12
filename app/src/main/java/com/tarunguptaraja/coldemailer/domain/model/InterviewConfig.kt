@@ -9,5 +9,7 @@ data class InterviewConfig(
     val resumeText: String,
     val jobDescription: String,
     val interviewType: InterviewType,
-    val questionCount: Int
+    val questionCount: Int,
+    val resumeSummary: String? = null,
+    val jobSpecSummary: String? = null
 )

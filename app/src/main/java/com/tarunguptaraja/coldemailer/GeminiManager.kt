@@ -231,8 +231,63 @@ class GeminiManager @Inject constructor(
         }
     }
 
-    // ==================== INTERVIEW METHODS ====================
+    // ==================== SUMMARIZATION METHODS ====================
 
+    suspend fun summarizeResume(resumeText: String): Pair<String, Int>? = withContext(Dispatchers.IO) {
+        if (resumeText.isBlank()) return@withContext null
+        try {
+            val prompt = """
+                Extract a dense, concise summary of this resume to serve as context for an AI interviewer.
+                Include ONLY:
+                - Years of experience
+                - Core technical/soft skills
+                - 2-3 most relevant previous roles/projects
+                DO NOT output extra boilerplate. Be extremely brief (max 150 words).
+                
+                Resume:
+                $resumeText
+            """.trimIndent()
+
+            val content = content { text(prompt) }
+            val response = getGenerativeModel().generateContent(content)
+            val responseText = response.text ?: ""
+            val tokensUsed = response.usageMetadata?.totalTokenCount ?: 0
+            
+            if (responseText.isNotBlank()) Pair(responseText.trim(), tokensUsed) else null
+        } catch (e: Exception) {
+            Log.e("GeminiManager", "Error summarizing resume: ${e.message}")
+            null
+        }
+    }
+
+    suspend fun summarizeJobDescription(jdText: String): Pair<String, Int>? = withContext(Dispatchers.IO) {
+        if (jdText.isBlank()) return@withContext null
+        try {
+            val prompt = """
+                Extract a dense, concise summary of this job description to serve as context for an AI interviewer.
+                Include ONLY:
+                - Exact role title and seniority
+                - Top 3-5 mandatory skills
+                - Key responsibilities
+                DO NOT output extra boilerplate. Be extremely brief (max 100 words).
+                
+                Job Description:
+                $jdText
+            """.trimIndent()
+
+            val content = content { text(prompt) }
+            val response = getGenerativeModel().generateContent(content)
+            val responseText = response.text ?: ""
+            val tokensUsed = response.usageMetadata?.totalTokenCount ?: 0
+            
+            if (responseText.isNotBlank()) Pair(responseText.trim(), tokensUsed) else null
+        } catch (e: Exception) {
+            Log.e("GeminiManager", "Error summarizing JD: ${e.message}")
+            null
+        }
+    }
+
+    // ==================== INTERVIEW METHODS ====================
     data class InterviewQuestionsResult(
         val questions: List<InterviewQuestion>,
         val tokensUsed: Int
@@ -494,11 +549,13 @@ class GeminiManager @Inject constructor(
         config: InterviewConfig
     ): InterviewTopicsResult? = withContext(Dispatchers.IO) {
         try {
-            val jdContext = if (config.jobDescription.isBlank()) {
+            val jdContext = config.jobSpecSummary ?: if (config.jobDescription.isBlank()) {
                 "No JD provided - infer typical requirements for ${config.jobRole} with ${config.experience} years experience"
             } else {
                 config.jobDescription
             }
+            
+            val resumeContext = config.resumeSummary ?: config.resumeText
             
             val prompt = """
                 You are an expert technical interviewer planning an interview.
@@ -511,7 +568,7 @@ class GeminiManager @Inject constructor(
                 $jdContext
                 
                 Candidate Resume:
-                ${config.resumeText}
+                $resumeContext
                 
                 Your task:
                 1. Identify 4-6 key topic areas to cover in this interview based on the role and experience level
@@ -583,11 +640,13 @@ class GeminiManager @Inject constructor(
         isFollowUp: Boolean = false
     ): NextQuestionResult? = withContext(Dispatchers.IO) {
         try {
-            val jdContext = if (config.jobDescription.isBlank()) {
+            val jdContext = config.jobSpecSummary ?: if (config.jobDescription.isBlank()) {
                 "No JD provided - typical ${config.jobRole} role requirements"
             } else {
                 config.jobDescription
             }
+            
+            val resumeContext = config.resumeSummary ?: config.resumeText
             
             val followUpContext = if (isFollowUp && previousQuestion != null && previousAnswer != null && previousAnalysis != null) {
                 """
@@ -624,7 +683,7 @@ class GeminiManager @Inject constructor(
                 $followUpContext
                 
                 Candidate Resume Context:
-                ${config.resumeText}
+                $resumeContext
                 
                 Job Description Context:
                 $jdContext
