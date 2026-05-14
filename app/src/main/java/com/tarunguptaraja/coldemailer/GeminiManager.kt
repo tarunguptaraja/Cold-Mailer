@@ -94,8 +94,9 @@ class GeminiManager @Inject constructor(
 
             val response = getGenerativeModel().generateContent(content)
             val responseText = response.text ?: ""
-            val tokensUsed = response.usageMetadata?.totalTokenCount ?: 0
-            Log.d("GeminiManager", "Response received ($tokensUsed tokens): $responseText")
+            val inputTokens = response.usageMetadata?.promptTokenCount ?: 0
+            val outputTokens = response.usageMetadata?.candidatesTokenCount ?: 0
+            Log.d("GeminiManager", "Response received (In: $inputTokens, Out: $outputTokens tokens): $responseText")
 
             // Extract JSON from the response text
             val jsonRegex = Regex("\\{.*\\}", RegexOption.DOT_MATCHES_ALL)
@@ -129,7 +130,8 @@ class GeminiManager @Inject constructor(
                     subject = jsonObject.optString("subject"),
                     initialBody = jsonObject.optString("initialBody"),
                     followUpBody = jsonObject.optString("followUpBody"),
-                    tokensUsed = tokensUsed
+                    inputTokens = inputTokens,
+                    outputTokens = outputTokens
                 )
             } else {
                 Log.e("GeminiManager", "No JSON found in response")
@@ -179,8 +181,9 @@ class GeminiManager @Inject constructor(
 
             val response = getGenerativeModel().generateContent(content)
             val responseText = response.text ?: ""
-            val tokensUsed = response.usageMetadata?.totalTokenCount ?: 0
-            Log.d("GeminiManager", "ATS Score Response ($tokensUsed tokens): $responseText")
+            val inputTokens = response.usageMetadata?.promptTokenCount ?: 0
+            val outputTokens = response.usageMetadata?.candidatesTokenCount ?: 0
+            Log.d("GeminiManager", "ATS Score Response (In: $inputTokens, Out: $outputTokens tokens): $responseText")
 
             val jsonRegex = Regex("\\{.*\\}", RegexOption.DOT_MATCHES_ALL)
             val jsonMatch = jsonRegex.find(responseText)?.value
@@ -219,7 +222,8 @@ class GeminiManager @Inject constructor(
                     weaknesses = weaknesses,
                     missingKeywords = missingKeywords,
                     improvementTips = improvementTips,
-                    tokensUsed = tokensUsed
+                    inputTokens = inputTokens,
+                    outputTokens = outputTokens
                 )
             } else {
                 null
@@ -232,8 +236,13 @@ class GeminiManager @Inject constructor(
     }
 
     // ==================== SUMMARIZATION METHODS ====================
+    data class SummarizationResult(
+        val text: String,
+        val inputTokens: Int,
+        val outputTokens: Int
+    )
 
-    suspend fun summarizeResume(resumeText: String): Pair<String, Int>? = withContext(Dispatchers.IO) {
+    suspend fun summarizeResume(resumeText: String): SummarizationResult? = withContext(Dispatchers.IO) {
         if (resumeText.isBlank()) return@withContext null
         try {
             val prompt = """
@@ -251,16 +260,17 @@ class GeminiManager @Inject constructor(
             val content = content { text(prompt) }
             val response = getGenerativeModel().generateContent(content)
             val responseText = response.text ?: ""
-            val tokensUsed = response.usageMetadata?.totalTokenCount ?: 0
+            val inputTokens = response.usageMetadata?.promptTokenCount ?: 0
+            val outputTokens = response.usageMetadata?.candidatesTokenCount ?: 0
             
-            if (responseText.isNotBlank()) Pair(responseText.trim(), tokensUsed) else null
+            if (responseText.isNotBlank()) SummarizationResult(responseText.trim(), inputTokens, outputTokens) else null
         } catch (e: Exception) {
             Log.e("GeminiManager", "Error summarizing resume: ${e.message}")
             null
         }
     }
 
-    suspend fun summarizeJobDescription(jdText: String): Pair<String, Int>? = withContext(Dispatchers.IO) {
+    suspend fun summarizeJobDescription(jdText: String): SummarizationResult? = withContext(Dispatchers.IO) {
         if (jdText.isBlank()) return@withContext null
         try {
             val prompt = """
@@ -278,9 +288,10 @@ class GeminiManager @Inject constructor(
             val content = content { text(prompt) }
             val response = getGenerativeModel().generateContent(content)
             val responseText = response.text ?: ""
-            val tokensUsed = response.usageMetadata?.totalTokenCount ?: 0
+            val inputTokens = response.usageMetadata?.promptTokenCount ?: 0
+            val outputTokens = response.usageMetadata?.candidatesTokenCount ?: 0
             
-            if (responseText.isNotBlank()) Pair(responseText.trim(), tokensUsed) else null
+            if (responseText.isNotBlank()) SummarizationResult(responseText.trim(), inputTokens, outputTokens) else null
         } catch (e: Exception) {
             Log.e("GeminiManager", "Error summarizing JD: ${e.message}")
             null
@@ -290,7 +301,8 @@ class GeminiManager @Inject constructor(
     // ==================== INTERVIEW METHODS ====================
     data class InterviewQuestionsResult(
         val questions: List<InterviewQuestion>,
-        val tokensUsed: Int
+        val inputTokens: Int,
+        val outputTokens: Int
     )
 
     suspend fun generateInterviewQuestions(
@@ -345,8 +357,9 @@ class GeminiManager @Inject constructor(
 
             val response = getGenerativeModel().generateContent(content)
             val responseText = response.text ?: ""
-            val tokensUsed = response.usageMetadata?.totalTokenCount ?: 0
-            Log.d("GeminiManager", "Interview Questions Response ($tokensUsed tokens): $responseText")
+            val inputTokens = response.usageMetadata?.promptTokenCount ?: 0
+            val outputTokens = response.usageMetadata?.candidatesTokenCount ?: 0
+            Log.d("GeminiManager", "Interview Questions Response (In: $inputTokens, Out: $outputTokens tokens): $responseText")
 
             val jsonRegex = Regex("\\[.*\\]", RegexOption.DOT_MATCHES_ALL)
             val jsonMatch = jsonRegex.find(responseText)?.value
@@ -368,7 +381,7 @@ class GeminiManager @Inject constructor(
                     )
                 }
 
-                InterviewQuestionsResult(questions, tokensUsed)
+                InterviewQuestionsResult(questions, inputTokens, outputTokens)
             } else {
                 Log.e("GeminiManager", "No JSON array found in response")
                 null
@@ -382,7 +395,8 @@ class GeminiManager @Inject constructor(
 
     data class InterviewEvaluationResult(
         val analysis: QuestionAnalysis,
-        val tokensUsed: Int
+        val inputTokens: Int,
+        val outputTokens: Int
     )
 
     suspend fun evaluateInterviewAnswer(
@@ -426,8 +440,9 @@ class GeminiManager @Inject constructor(
 
             val response = getGenerativeModel().generateContent(content)
             val responseText = response.text ?: ""
-            val tokensUsed = response.usageMetadata?.totalTokenCount ?: 0
-            Log.d("GeminiManager", "Answer Evaluation Response ($tokensUsed tokens): $responseText")
+            val inputTokens = response.usageMetadata?.promptTokenCount ?: 0
+            val outputTokens = response.usageMetadata?.candidatesTokenCount ?: 0
+            Log.d("GeminiManager", "Answer Evaluation Response (In: $inputTokens, Out: $outputTokens tokens): $responseText")
 
             val jsonRegex = Regex("\\{.*\\}", RegexOption.DOT_MATCHES_ALL)
             val jsonMatch = jsonRegex.find(responseText)?.value
@@ -440,10 +455,11 @@ class GeminiManager @Inject constructor(
                     score = jsonObject.optInt("score"),
                     feedback = jsonObject.optString("feedback"),
                     suggestedAnswer = jsonObject.optString("suggestedAnswer"),
-                    tokensUsed = tokensUsed
+                    inputTokens = inputTokens,
+                    outputTokens = outputTokens
                 )
 
-                InterviewEvaluationResult(analysis, tokensUsed)
+                InterviewEvaluationResult(analysis, inputTokens, outputTokens)
             } else {
                 null
             }
@@ -456,7 +472,8 @@ class GeminiManager @Inject constructor(
 
     data class InterviewReportResult(
         val result: InterviewResult,
-        val tokensUsed: Int
+        val inputTokens: Int,
+        val outputTokens: Int
     )
 
     suspend fun generateInterviewReport(
@@ -498,8 +515,9 @@ class GeminiManager @Inject constructor(
 
             val response = getGenerativeModel().generateContent(content)
             val responseText = response.text ?: ""
-            val tokensUsed = response.usageMetadata?.totalTokenCount ?: 0
-            Log.d("GeminiManager", "Interview Report Response ($tokensUsed tokens): $responseText")
+            val inputTokens = response.usageMetadata?.promptTokenCount ?: 0
+            val outputTokens = response.usageMetadata?.candidatesTokenCount ?: 0
+            Log.d("GeminiManager", "Interview Report Response (In: $inputTokens, Out: $outputTokens tokens): $responseText")
 
             val jsonRegex = Regex("\\{.*\\}", RegexOption.DOT_MATCHES_ALL)
             val jsonMatch = jsonRegex.find(responseText)?.value
@@ -524,10 +542,11 @@ class GeminiManager @Inject constructor(
                     strengths = strengths,
                     weaknesses = weaknesses,
                     questionAnalysis = questionAnalyses,
-                    tokensUsed = tokensUsed
+                    inputTokens = inputTokens,
+                    outputTokens = outputTokens
                 )
 
-                InterviewReportResult(result, tokensUsed)
+                InterviewReportResult(result, inputTokens, outputTokens)
             } else {
                 null
             }
@@ -542,7 +561,8 @@ class GeminiManager @Inject constructor(
 
     data class InterviewTopicsResult(
         val topics: List<com.tarunguptaraja.coldemailer.domain.model.InterviewTopic>,
-        val tokensUsed: Int
+        val inputTokens: Int,
+        val outputTokens: Int
     )
 
     suspend fun generateInterviewTopics(
@@ -589,8 +609,9 @@ class GeminiManager @Inject constructor(
 
             val response = getGenerativeModel().generateContent(content)
             val responseText = response.text ?: ""
-            val tokensUsed = response.usageMetadata?.totalTokenCount ?: 0
-            Log.d("GeminiManager", "Interview Topics Response ($tokensUsed tokens): $responseText")
+            val inputTokens = response.usageMetadata?.promptTokenCount ?: 0
+            val outputTokens = response.usageMetadata?.candidatesTokenCount ?: 0
+            Log.d("GeminiManager", "Interview Topics Response (In: $inputTokens, Out: $outputTokens tokens): $responseText")
 
             val jsonRegex = Regex("\\[.*\\]", RegexOption.DOT_MATCHES_ALL)
             val jsonMatch = jsonRegex.find(responseText)?.value
@@ -614,7 +635,7 @@ class GeminiManager @Inject constructor(
                     )
                 }
 
-                InterviewTopicsResult(topics, tokensUsed)
+                InterviewTopicsResult(topics, inputTokens, outputTokens)
             } else {
                 Log.e("GeminiManager", "No JSON array found in topics response")
                 null
@@ -628,7 +649,8 @@ class GeminiManager @Inject constructor(
 
     data class NextQuestionResult(
         val question: InterviewQuestion,
-        val tokensUsed: Int
+        val inputTokens: Int,
+        val outputTokens: Int
     )
 
     suspend fun generateNextQuestion(
@@ -711,8 +733,9 @@ class GeminiManager @Inject constructor(
 
             val response = getGenerativeModel().generateContent(content)
             val responseText = response.text ?: ""
-            val tokensUsed = response.usageMetadata?.totalTokenCount ?: 0
-            Log.d("GeminiManager", "Next Question Response ($tokensUsed tokens): $responseText")
+            val inputTokens = response.usageMetadata?.promptTokenCount ?: 0
+            val outputTokens = response.usageMetadata?.candidatesTokenCount ?: 0
+            Log.d("GeminiManager", "Next Question Response (In: $inputTokens, Out: $outputTokens tokens): $responseText")
 
             val jsonRegex = Regex("\\{.*\\}", RegexOption.DOT_MATCHES_ALL)
             val jsonMatch = jsonRegex.find(responseText)?.value
@@ -733,7 +756,7 @@ class GeminiManager @Inject constructor(
                     followUpReason = if (isFollowUp) "Probing deeper based on previous answer" else null
                 )
 
-                NextQuestionResult(question, tokensUsed)
+                NextQuestionResult(question, inputTokens, outputTokens)
             } else {
                 Log.e("GeminiManager", "No JSON found in question response")
                 null
@@ -750,7 +773,8 @@ class GeminiManager @Inject constructor(
         val shouldFollowUp: Boolean,
         val followUpReason: String?,
         val shouldCompleteTopic: Boolean,
-        val tokensUsed: Int
+        val inputTokens: Int,
+        val outputTokens: Int
     )
 
     suspend fun evaluateAnswerWithDecision(
@@ -798,8 +822,9 @@ class GeminiManager @Inject constructor(
 
             val response = getGenerativeModel().generateContent(content)
             val responseText = response.text ?: ""
-            val tokensUsed = response.usageMetadata?.totalTokenCount ?: 0
-            Log.d("GeminiManager", "Evaluation with Decision ($tokensUsed tokens): $responseText")
+            val inputTokens = response.usageMetadata?.promptTokenCount ?: 0
+            val outputTokens = response.usageMetadata?.candidatesTokenCount ?: 0
+            Log.d("GeminiManager", "Evaluation with Decision (In: $inputTokens, Out: $outputTokens tokens): $responseText")
 
             val jsonRegex = Regex("\\{.*\\}", RegexOption.DOT_MATCHES_ALL)
             val jsonMatch = jsonRegex.find(responseText)?.value
@@ -814,7 +839,8 @@ class GeminiManager @Inject constructor(
                     score = jsonObject.optInt("score"),
                     feedback = jsonObject.optString("feedback"),
                     suggestedAnswer = jsonObject.optString("suggestedAnswer"),
-                    tokensUsed = tokensUsed
+                    inputTokens = inputTokens,
+                    outputTokens = outputTokens
                 )
 
                 EvaluationWithDecisionResult(
@@ -822,7 +848,8 @@ class GeminiManager @Inject constructor(
                     shouldFollowUp = jsonObject.optBoolean("shouldFollowUp", false),
                     followUpReason = jsonObject.optString("followUpReason", null),
                     shouldCompleteTopic = jsonObject.optBoolean("shouldCompleteTopic", false),
-                    tokensUsed = tokensUsed
+                    inputTokens = inputTokens,
+                    outputTokens = outputTokens
                 )
             } else {
                 null

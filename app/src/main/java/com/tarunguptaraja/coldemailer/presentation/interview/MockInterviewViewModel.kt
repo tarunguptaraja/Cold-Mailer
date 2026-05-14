@@ -4,27 +4,31 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tarunguptaraja.coldemailer.DocumentTextExtractor
-import com.tarunguptaraja.coldemailer.GeminiManager
 import com.tarunguptaraja.coldemailer.ProfilePreferenceManager
 import com.tarunguptaraja.coldemailer.RemoteConfigManager
 import com.tarunguptaraja.coldemailer.TokenManager
-import com.tarunguptaraja.coldemailer.UserManager
 import com.tarunguptaraja.coldemailer.domain.model.AnswerType
 import com.tarunguptaraja.coldemailer.domain.model.InterviewAnswer
 import com.tarunguptaraja.coldemailer.domain.model.InterviewConfig
 import com.tarunguptaraja.coldemailer.domain.model.InterviewQuestion
 import com.tarunguptaraja.coldemailer.domain.model.InterviewResult
 import com.tarunguptaraja.coldemailer.domain.model.InterviewSessionState
-import com.tarunguptaraja.coldemailer.domain.model.InterviewTopic
 import com.tarunguptaraja.coldemailer.domain.model.InterviewType
 import com.tarunguptaraja.coldemailer.domain.model.QuestionAnalysis
-import com.tarunguptaraja.coldemailer.domain.model.TokenTransaction
+import com.tarunguptaraja.coldemailer.domain.use_case.AnalyzeAnswerUseCase
+import com.tarunguptaraja.coldemailer.domain.use_case.DeductTokensUseCase
+import com.tarunguptaraja.coldemailer.domain.use_case.GenerateInterviewReportUseCase
+import com.tarunguptaraja.coldemailer.domain.use_case.GenerateInterviewTopicsUseCase
+import com.tarunguptaraja.coldemailer.domain.use_case.GenerateNextQuestionUseCase
+import com.tarunguptaraja.coldemailer.domain.use_case.GetRemainingTokensUseCase
+import com.tarunguptaraja.coldemailer.domain.use_case.LogGeminiTokensUseCase
+import com.tarunguptaraja.coldemailer.domain.use_case.SummarizeJobDescriptionUseCase
+import com.tarunguptaraja.coldemailer.domain.use_case.SummarizeResumeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.util.UUID
 import javax.inject.Inject
 
 // ==================== UI STATES ====================
@@ -37,10 +41,11 @@ sealed class InterviewUiState {
         val currentQuestion: InterviewQuestion?,
         val sessionTokensUsed: Int
     ) : InterviewUiState()
+
     data class Evaluating(
-        val progress: String,
-        val sessionTokensUsed: Int
+        val progress: String, val sessionTokensUsed: Int
     ) : InterviewUiState()
+
     data class Completed(
         val result: InterviewResult,
         val sessionState: InterviewSessionState,
@@ -62,43 +67,39 @@ data class InterviewSetupState(
     val interviewType: InterviewType = InterviewType.MIXED,
     val questionCount: Int = 10,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val baseCost: Int = 0,
+    val perQuestionCost: Int = 1
 ) {
     val canStartInterview: Boolean
-        get() = jobRole.isNotBlank() && 
-                experience.isNotBlank() && 
-                (resumeText.isNotBlank() || resumeUri != null)
-    
-    fun estimatedTokens(): Int {
-        // Rough estimate based on typical Gemini usage
-        val topicGen = 300
-        val perQuestion = 400
-        val perAnswerEval = 300
-        val reportGen = 500
-        return topicGen + (questionCount * perQuestion) + (questionCount * perAnswerEval) + reportGen
-    }
+        get() = jobRole.isNotBlank() && experience.isNotBlank() && (resumeText.isNotBlank() || resumeUri != null)
+    val estimatedCost: Int
+        get() = baseCost + (questionCount * perQuestionCost)
 }
 
 // ==================== TOKEN TRACKING ====================
 
 data class TokenUsageBreakdown(
-    val estimatedTotal: Int = 0,
-    val topicGeneration: Int = 0,
-    val questionGeneration: Int = 0,
-    val answerEvaluations: Map<String, Int> = emptyMap(),
-    val finalReport: Int = 0
+    val estimatedTotal: Int = 0, val inputTokens: Int = 0, val outputTokens: Int = 0
 ) {
     val totalUsed: Int
-        get() = topicGeneration + questionGeneration + answerEvaluations.values.sum() + finalReport
+        get() = inputTokens + outputTokens
 }
 
 @HiltViewModel
 class MockInterviewViewModel @Inject constructor(
-    private val tokenManager: TokenManager,
-    private val geminiManager: GeminiManager,
+    private val generateInterviewTopicsUseCase: GenerateInterviewTopicsUseCase,
+    private val generateNextQuestionUseCase: GenerateNextQuestionUseCase,
+    private val analyzeAnswerUseCase: AnalyzeAnswerUseCase,
+    private val generateInterviewReportUseCase: GenerateInterviewReportUseCase,
+    private val summarizeResumeUseCase: SummarizeResumeUseCase,
+    private val summarizeJobDescriptionUseCase: SummarizeJobDescriptionUseCase,
+    private val deductTokensUseCase: DeductTokensUseCase,
+    private val logGeminiTokensUseCase: LogGeminiTokensUseCase,
+    private val getRemainingTokensUseCase: GetRemainingTokensUseCase,
     private val documentTextExtractor: DocumentTextExtractor,
     private val profilePreferenceManager: ProfilePreferenceManager,
-    private val userManager: UserManager,
+    private val tokenManager: TokenManager,
     private val remoteConfigManager: RemoteConfigManager
 ) : ViewModel() {
 
@@ -107,13 +108,18 @@ class MockInterviewViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<InterviewUiState>(InterviewUiState.Setup)
     val uiState: StateFlow<InterviewUiState> = _uiState.asStateFlow()
 
-    private val _setupState = MutableStateFlow(InterviewSetupState())
+    private val _setupState = MutableStateFlow(
+        InterviewSetupState(
+            baseCost = remoteConfigManager.getInterviewBaseTokens().toInt(),
+            perQuestionCost = remoteConfigManager.getInterviewTokensPerQuestion().toInt()
+        )
+    )
     val setupState: StateFlow<InterviewSetupState> = _setupState.asStateFlow()
 
     private val _tokenBreakdown = MutableStateFlow(TokenUsageBreakdown())
     val tokenBreakdown: StateFlow<TokenUsageBreakdown> = _tokenBreakdown.asStateFlow()
 
-    private val _tokens = MutableStateFlow(tokenManager.getRemainingTokens())
+    private val _tokens = MutableStateFlow(getRemainingTokensUseCase())
     val tokens: StateFlow<Long> = _tokens.asStateFlow()
 
     private val questionAnalyses = mutableListOf<QuestionAnalysis>()
@@ -146,33 +152,25 @@ class MockInterviewViewModel @Inject constructor(
 
     fun onJobDescriptionFileSelected(uri: Uri, fileName: String) {
         _setupState.value = _setupState.value.copy(
-            jobDescriptionUri = uri,
-            jobDescriptionFileName = fileName,
-            jobDescriptionText = ""
+            jobDescriptionUri = uri, jobDescriptionFileName = fileName, jobDescriptionText = ""
         )
     }
 
     fun onResumeFileSelected(uri: Uri, fileName: String) {
         _setupState.value = _setupState.value.copy(
-            resumeUri = uri,
-            resumeFileName = fileName,
-            resumeText = ""
+            resumeUri = uri, resumeFileName = fileName, resumeText = ""
         )
     }
 
     fun clearJobDescription() {
         _setupState.value = _setupState.value.copy(
-            jobDescriptionUri = null,
-            jobDescriptionFileName = "",
-            jobDescriptionText = ""
+            jobDescriptionUri = null, jobDescriptionFileName = "", jobDescriptionText = ""
         )
     }
 
     fun clearResume() {
         _setupState.value = _setupState.value.copy(
-            resumeUri = null,
-            resumeFileName = "",
-            resumeText = ""
+            resumeUri = null, resumeFileName = "", resumeText = ""
         )
     }
 
@@ -186,31 +184,29 @@ class MockInterviewViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            val estimatedCost = state.estimatedCost
+            if (getRemainingTokensUseCase() < estimatedCost) {
+                _setupState.value =
+                    state.copy(error = "Not enough tokens. Required: $estimatedCost")
+                return@launch
+            }
+
             _uiState.value = InterviewUiState.Loading("Planning interview topics...")
-            
-            val estimatedCost = (remoteConfigManager.getInterviewBaseTokens() + 
-                                (state.questionCount * remoteConfigManager.getInterviewTokensPerQuestion())).toInt()
-            
+
             _tokenBreakdown.value = TokenUsageBreakdown(estimatedTotal = estimatedCost)
             questionAnalyses.clear()
 
-            // Deduct estimated upfront
-            tokenManager.deductTokens(estimatedCost)
-            val estTx = TokenTransaction(
-                id = UUID.randomUUID().toString(),
-                amount = estimatedCost,
-                type = "DEDUCTION",
-                description = "Interview: Estimated Cost for ${state.questionCount} Questions",
-                timestamp = System.currentTimeMillis()
-            )
-            userManager.addTokenTransaction(estTx)
-
             try {
+                // ... (deduction moved to individual steps)
+
+                // Extract text from files if needed
                 // Extract text from files if needed
                 val jdText = if (state.jobDescriptionText.isNotBlank()) {
                     state.jobDescriptionText
                 } else if (state.jobDescriptionUri != null) {
-                    documentTextExtractor.extractText(state.jobDescriptionUri, state.jobDescriptionFileName).text
+                    documentTextExtractor.extractText(
+                        state.jobDescriptionUri, state.jobDescriptionFileName
+                    ).text
                 } else {
                     ""
                 }
@@ -224,13 +220,18 @@ class MockInterviewViewModel @Inject constructor(
                 }
 
                 // Generate context summaries first
-                val resumeSummaryResult = if (resumeText.isNotBlank()) geminiManager.summarizeResume(resumeText) else null
-                val jdSummaryResult = if (jdText.isNotBlank()) geminiManager.summarizeJobDescription(jdText) else null
+                val resumeSummaryResult =
+                    if (resumeText.isNotBlank()) summarizeResumeUseCase(resumeText) else null
+                val jdSummaryResult =
+                    if (jdText.isNotBlank()) summarizeJobDescriptionUseCase(jdText) else null
 
-                val resumeSummary = resumeSummaryResult?.first
-                val jdSummary = jdSummaryResult?.first
-                
-                val summarizationTokens = (resumeSummaryResult?.second ?: 0) + (jdSummaryResult?.second ?: 0)
+                val resumeSummary = resumeSummaryResult?.text
+                val jdSummary = jdSummaryResult?.text
+
+                val summarizationInput =
+                    (resumeSummaryResult?.inputTokens ?: 0) + (jdSummaryResult?.inputTokens ?: 0)
+                val summarizationOutput =
+                    (resumeSummaryResult?.outputTokens ?: 0) + (jdSummaryResult?.outputTokens ?: 0)
 
                 // Create config
                 val config = InterviewConfig(
@@ -245,7 +246,7 @@ class MockInterviewViewModel @Inject constructor(
                 )
 
                 // Generate interview topics
-                val topicsResult = geminiManager.generateInterviewTopics(config)
+                val topicsResult = generateInterviewTopicsUseCase(config)
                 if (topicsResult == null) {
                     _setupState.value = state.copy(error = "Failed to generate interview topics")
                     _uiState.value = InterviewUiState.Setup
@@ -254,7 +255,8 @@ class MockInterviewViewModel @Inject constructor(
 
                 // Update token breakdown
                 _tokenBreakdown.value = _tokenBreakdown.value.copy(
-                    topicGeneration = topicsResult.tokensUsed + summarizationTokens
+                    inputTokens = _tokenBreakdown.value.inputTokens + topicsResult.inputTokens + summarizationInput,
+                    outputTokens = _tokenBreakdown.value.outputTokens + topicsResult.outputTokens + summarizationOutput
                 )
 
                 // Initialize session state
@@ -291,7 +293,7 @@ class MockInterviewViewModel @Inject constructor(
             return
         }
 
-        val questionResult = geminiManager.generateNextQuestion(
+        val questionResult = generateNextQuestionUseCase(
             config = config,
             topic = currentTopic,
             previousQuestion = previousQuestion,
@@ -305,9 +307,16 @@ class MockInterviewViewModel @Inject constructor(
             return
         }
 
+        // Deduct total tokens on first question
+        if (sessionState.questionsAsked.isEmpty()) {
+            val totalCost = _setupState.value.estimatedCost
+            deductTokensUseCase(totalCost, "Full Mock Interview: ${config.jobRole}")
+        }
+
         // Update token breakdown
         val updatedBreakdown = _tokenBreakdown.value.copy(
-            questionGeneration = _tokenBreakdown.value.questionGeneration + questionResult.tokensUsed
+            inputTokens = _tokenBreakdown.value.inputTokens + questionResult.inputTokens,
+            outputTokens = _tokenBreakdown.value.outputTokens + questionResult.outputTokens
         )
         _tokenBreakdown.value = updatedBreakdown
 
@@ -335,7 +344,7 @@ class MockInterviewViewModel @Inject constructor(
     fun submitAnswer(answerText: String, isVoice: Boolean) {
         val currentState = _uiState.value as? InterviewUiState.InProgress
         val currentQuestion = currentState?.currentQuestion
-        
+
         if (currentQuestion == null) return
 
         viewModelScope.launch {
@@ -358,7 +367,7 @@ class MockInterviewViewModel @Inject constructor(
             }
 
             // Evaluate answer with decision
-            val evaluationResult = geminiManager.evaluateAnswerWithDecision(
+            val evaluationResult = analyzeAnswerUseCase(
                 config = InterviewConfig(
                     jobRole = _setupState.value.jobRole,
                     experience = _setupState.value.experience,
@@ -368,10 +377,7 @@ class MockInterviewViewModel @Inject constructor(
                     questionCount = _setupState.value.questionCount,
                     resumeSummary = null,
                     jobSpecSummary = null
-                ),
-                question = currentQuestion,
-                answer = answer,
-                topic = currentTopic
+                ), question = currentQuestion, answer = answer, topic = currentTopic
             )
 
             if (evaluationResult == null) {
@@ -383,10 +389,9 @@ class MockInterviewViewModel @Inject constructor(
             questionAnalyses.add(evaluationResult.analysis)
 
             // Update token breakdown
-            val updatedEvaluations = _tokenBreakdown.value.answerEvaluations.toMutableMap()
-            updatedEvaluations[currentQuestion.id] = evaluationResult.tokensUsed
             _tokenBreakdown.value = _tokenBreakdown.value.copy(
-                answerEvaluations = updatedEvaluations
+                inputTokens = _tokenBreakdown.value.inputTokens + evaluationResult.inputTokens,
+                outputTokens = _tokenBreakdown.value.outputTokens + evaluationResult.outputTokens
             )
 
             // Update session state with answer
@@ -427,8 +432,7 @@ class MockInterviewViewModel @Inject constructor(
                             questionCount = _setupState.value.questionCount,
                             resumeSummary = null,
                             jobSpecSummary = null
-                        ),
-                        sessionState = sessionWithNextTopic
+                        ), sessionState = sessionWithNextTopic
                     )
                 } else {
                     completeInterview(
@@ -441,8 +445,7 @@ class MockInterviewViewModel @Inject constructor(
                             questionCount = _setupState.value.questionCount,
                             resumeSummary = null,
                             jobSpecSummary = null
-                        ),
-                        sessionState = sessionWithNextTopic
+                        ), sessionState = sessionWithNextTopic
                     )
                 }
             }
@@ -450,8 +453,7 @@ class MockInterviewViewModel @Inject constructor(
     }
 
     private suspend fun completeInterview(
-        config: InterviewConfig,
-        sessionState: InterviewSessionState
+        config: InterviewConfig, sessionState: InterviewSessionState
     ) {
         _uiState.value = InterviewUiState.Evaluating(
             progress = "Generating final interview report...",
@@ -459,10 +461,10 @@ class MockInterviewViewModel @Inject constructor(
         )
 
         // Generate final report
-        val reportResult = geminiManager.generateInterviewReport(
+        val reportResult = generateInterviewReportUseCase(
             config = config,
             answers = sessionState.answersGiven,
-            questionAnalyses = questionAnalyses.toList()
+            analyses = questionAnalyses.toList()
         )
 
         if (reportResult == null) {
@@ -470,38 +472,24 @@ class MockInterviewViewModel @Inject constructor(
             return
         }
 
+        // Base cost already deducted at start
+        /*
+        val baseCost = _setupState.value.baseCost
+        if (baseCost > 0) {
+            deductTokensUseCase(baseCost, "Interview Report/Setup")
+        }
+        */
+
         // Update token breakdown
         _tokenBreakdown.value = _tokenBreakdown.value.copy(
-            finalReport = reportResult.tokensUsed
+            inputTokens = _tokenBreakdown.value.inputTokens + reportResult.inputTokens,
+            outputTokens = _tokenBreakdown.value.outputTokens + reportResult.outputTokens
         )
 
-        val totalUsed = _tokenBreakdown.value.totalUsed
-        val estimatedTotal = _tokenBreakdown.value.estimatedTotal
-
-        if (totalUsed > estimatedTotal) {
-            val extra = totalUsed - estimatedTotal
-            tokenManager.deductTokens(extra)
-            val tx = TokenTransaction(
-                id = UUID.randomUUID().toString(),
-                amount = extra,
-                type = "DEDUCTION",
-                description = "Interview: Cost Adjustment",
-                timestamp = System.currentTimeMillis()
-            )
-            userManager.addTokenTransaction(tx)
-        } else if (totalUsed < estimatedTotal) {
-            val refund = estimatedTotal - totalUsed
-            val currentTokens = tokenManager.getRemainingTokens()
-            tokenManager.setTokens(currentTokens + refund)
-            val tx = TokenTransaction(
-                id = UUID.randomUUID().toString(),
-                amount = refund,
-                type = "REFUND",
-                description = "Interview: Unused Tokens Refund",
-                timestamp = System.currentTimeMillis()
-            )
-            userManager.addTokenTransaction(tx)
-        }
+        // Log gemini usage
+        logGeminiTokensUseCase(
+            _tokenBreakdown.value.inputTokens, _tokenBreakdown.value.outputTokens, "MockInterview"
+        )
 
         // Mark interview as complete
         val completedSession = sessionState.completeInterview()
@@ -525,7 +513,7 @@ class MockInterviewViewModel @Inject constructor(
     fun skipQuestion() {
         val currentState = _uiState.value as? InterviewUiState.InProgress
         val currentQuestion = currentState?.currentQuestion
-        
+
         if (currentQuestion == null) return
 
         viewModelScope.launch {
@@ -539,17 +527,28 @@ class MockInterviewViewModel @Inject constructor(
                 _uiState.value = InterviewUiState.Setup
                 return@launch
             }
-            
-            // For skip, we record an empty answer
+
             val answer = InterviewAnswer(
                 questionId = currentQuestion.id,
                 answerText = "Skipped",
                 answerType = AnswerType.TEXT,
                 timestamp = System.currentTimeMillis()
             )
-            
+
             val sessionWithAnswer = currentState.sessionState.addAnswer(answer)
-            
+
+            // Record skip in analysis
+            questionAnalyses.add(
+                QuestionAnalysis(
+                    questionId = currentQuestion.id,
+                    question = currentQuestion.question,
+                    userAnswer = "Skipped",
+                    feedback = "Question was skipped by the user. No response was provided for evaluation.",
+                    score = 0,
+                    suggestedAnswer = "User skipped this question."
+                )
+            )
+
             // Move to next topic directly since we skipped
             val completedTopic = currentTopic.markComplete()
             val sessionWithCompletedTopic = sessionWithAnswer.updateTopic(completedTopic)
@@ -564,8 +563,7 @@ class MockInterviewViewModel @Inject constructor(
                         resumeText = _setupState.value.resumeText,
                         interviewType = _setupState.value.interviewType,
                         questionCount = _setupState.value.questionCount
-                    ),
-                    sessionState = sessionWithNextTopic
+                    ), sessionState = sessionWithNextTopic
                 )
             } else {
                 completeInterview(
@@ -576,8 +574,7 @@ class MockInterviewViewModel @Inject constructor(
                         resumeText = _setupState.value.resumeText,
                         interviewType = _setupState.value.interviewType,
                         questionCount = _setupState.value.questionCount
-                    ),
-                    sessionState = sessionWithNextTopic
+                    ), sessionState = sessionWithNextTopic
                 )
             }
         }
@@ -585,13 +582,23 @@ class MockInterviewViewModel @Inject constructor(
 
     fun reset() {
         _uiState.value = InterviewUiState.Setup
-        _setupState.value = InterviewSetupState()
+        _setupState.value = InterviewSetupState(
+            baseCost = remoteConfigManager.getInterviewBaseTokens().toInt(),
+            perQuestionCost = remoteConfigManager.getInterviewTokensPerQuestion().toInt()
+        )
         _tokenBreakdown.value = TokenUsageBreakdown()
     }
 
     // ==================== TOKEN OBSERVATION ====================
 
     init {
+        viewModelScope.launch {
+            remoteConfigManager.fetchAndActivate()
+            _setupState.value = _setupState.value.copy(
+                baseCost = remoteConfigManager.getInterviewBaseTokens().toInt(),
+                perQuestionCost = remoteConfigManager.getInterviewTokensPerQuestion().toInt()
+            )
+        }
         viewModelScope.launch {
             tokenManager.tokens.collect { tokens ->
                 _tokens.value = tokens.toLong()

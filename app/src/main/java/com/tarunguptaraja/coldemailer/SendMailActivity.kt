@@ -2,17 +2,23 @@ package com.tarunguptaraja.coldemailer
 
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.text.Editable
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.TextWatcher
+import android.text.style.ImageSpan
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
-import android.graphics.Color
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -23,6 +29,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.tarunguptaraja.coldemailer.databinding.ActivitySendEmailBinding
 import com.tarunguptaraja.coldemailer.domain.model.Profile
 import com.tarunguptaraja.coldemailer.presentation.send.SendMailViewModel
+import com.tarunguptaraja.coldemailer.presentation.shop.ShopActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.io.File
@@ -87,9 +94,7 @@ class SendMailActivity : AppCompatActivity() {
 
     private fun setupListeners() {
         bottomNavHelper.setupBottomNav(
-            this,
-            binding.bottomNavigation,
-            R.id.nav_mailer
+            this, binding.bottomNavigation, R.id.nav_mailer
         )
 
         binding.etJdText.doAfterTextChanged { viewModel.onJdTextChanged(it.toString()) }
@@ -120,14 +125,15 @@ class SendMailActivity : AppCompatActivity() {
                     }
 
                     sendPdfInGmail(
-                        pdfFile,
-                        profile.copy(name = profile.name),
-                        subjectToSend,
-                        bodyToSend
+                        pdfFile, profile.copy(name = profile.name), subjectToSend, bodyToSend
                     )
                     viewModel.saveSentHistory(emailText)
                 } else {
-                    Toast.makeText(this, "No resume found for this role. Please add a role with resume.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "No resume found for this role. Please add a role with resume.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     startActivity(Intent(this, MainActivity::class.java))
                 }
             }
@@ -141,7 +147,11 @@ class SendMailActivity : AppCompatActivity() {
             val state = viewModel.uiState.value
             val jdText = binding.etJdText.text.toString().trim()
             if (jdText.isEmpty() && state.screenshot == null) {
-                Toast.makeText(this, "Please enter job description text or select a screenshot", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Please enter job description text or select a screenshot",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
             val tone = binding.spinnerTone.text.toString()
@@ -154,6 +164,10 @@ class SendMailActivity : AppCompatActivity() {
             binding.btnScreenshot.setImageResource(R.drawable.ic_gallery)
             Toast.makeText(this, "Data cleared", Toast.LENGTH_SHORT).show()
         }
+
+        binding.tvTokens.setOnClickListener {
+            startActivity(Intent(this, ShopActivity::class.java))
+        }
     }
 
     private fun observeState() {
@@ -163,7 +177,21 @@ class SendMailActivity : AppCompatActivity() {
                     binding.progressAnalysis.visibility =
                         if (state.isAnalyzing) View.VISIBLE else View.INVISIBLE
                     binding.btnAnalyze.isEnabled = !state.isAnalyzing
-                    binding.tvTokens.text = "%,d Tokens".format(state.tokensRemaining)
+                    binding.tvTokens.text = "${state.tokensRemaining} Tokens"
+
+                    val btnText = "Analyse with AI   ${state.analyzeCost}"
+                    val spannable = SpannableStringBuilder(btnText)
+                    val icon = ContextCompat.getDrawable(this@SendMailActivity, R.drawable.ic_token)
+                    icon?.let {
+                        val size = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._14sdp)
+                        it.setBounds(0, 0, size, size)
+                        val imageSpan = ImageSpan(it, ImageSpan.ALIGN_CENTER)
+                        val iconIndex = btnText.indexOf("  ") + 1
+                        spannable.setSpan(
+                            imageSpan, iconIndex, iconIndex + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+                    binding.btnAnalyze.text = spannable
 
                     // Role Dropdown
                     if (state.roles.isNotEmpty()) {
@@ -228,7 +256,10 @@ class SendMailActivity : AppCompatActivity() {
 
                     state.analysisError?.let {
                         Toast.makeText(this@SendMailActivity, it, Toast.LENGTH_LONG).show()
-                        val isProfileError = it.contains("profile", ignoreCase = true) || it.contains("role", ignoreCase = true)
+                        val isProfileError =
+                            it.contains("profile", ignoreCase = true) || it.contains(
+                                "role", ignoreCase = true
+                            )
                         viewModel.clearAnalysisError()
                         if (isProfileError) {
                             startActivity(Intent(this@SendMailActivity, MainActivity::class.java))
@@ -267,9 +298,9 @@ class SendMailActivity : AppCompatActivity() {
 }
 
 // Extension to avoid infinite loop
-fun android.widget.EditText.etJdTextChanged(after: (android.text.Editable?) -> Unit) {
-    this.addTextChangedListener(object : android.text.TextWatcher {
-        override fun afterTextChanged(s: android.text.Editable?) {
+fun android.widget.EditText.etJdTextChanged(after: (Editable?) -> Unit) {
+    this.addTextChangedListener(object : TextWatcher {
+        override fun afterTextChanged(s: Editable?) {
             after(s)
         }
 

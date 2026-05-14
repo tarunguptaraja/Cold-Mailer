@@ -6,39 +6,40 @@ import android.animation.PropertyValuesHolder
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.media.MediaActionSound
 import android.net.Uri
 import android.os.Bundle
-import android.graphics.Color
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.ImageSpan
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.chip.Chip
 import com.google.android.material.slider.Slider
+import com.tarunguptaraja.coldemailer.BottomNavHelper
 import com.tarunguptaraja.coldemailer.DocumentTextExtractor
 import com.tarunguptaraja.coldemailer.R
 import com.tarunguptaraja.coldemailer.databinding.ActivityMockInterviewBinding
-import com.tarunguptaraja.coldemailer.BottomNavHelper
-import com.tarunguptaraja.coldemailer.domain.model.AnswerType
 import com.tarunguptaraja.coldemailer.domain.model.InterviewType
 import com.tarunguptaraja.coldemailer.presentation.interview.adapter.QuestionAnalysisAdapter
 import dagger.hilt.android.AndroidEntryPoint
@@ -140,11 +141,12 @@ class MockInterviewActivity : AppCompatActivity() {
         if (pulseAnimator == null) {
             val scaleX = PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 1.2f)
             val scaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 1.2f)
-            pulseAnimator = ObjectAnimator.ofPropertyValuesHolder(binding.btnRecord, scaleX, scaleY).apply {
-                repeatCount = ObjectAnimator.INFINITE
-                repeatMode = ObjectAnimator.REVERSE
-                duration = 500
-            }
+            pulseAnimator =
+                ObjectAnimator.ofPropertyValuesHolder(binding.btnRecord, scaleX, scaleY).apply {
+                    repeatCount = ObjectAnimator.INFINITE
+                    repeatMode = ObjectAnimator.REVERSE
+                    duration = 500
+                }
         }
         pulseAnimator?.start()
     }
@@ -162,13 +164,14 @@ class MockInterviewActivity : AppCompatActivity() {
             if (status == TextToSpeech.SUCCESS) {
                 textToSpeech?.language = Locale.US
                 ttsInitialized = true
-                
+
                 // Set up utterance progress listener to detect when speech finishes
-                textToSpeech?.setOnUtteranceProgressListener(object : android.speech.tts.UtteranceProgressListener() {
+                textToSpeech?.setOnUtteranceProgressListener(object :
+                    android.speech.tts.UtteranceProgressListener() {
                     override fun onStart(utteranceId: String?) {
                         // TTS started
                     }
-                    
+
                     override fun onDone(utteranceId: String?) {
                         // TTS finished - wait 2 seconds then start mic if in voice mode
                         binding.root.postDelayed({
@@ -177,7 +180,7 @@ class MockInterviewActivity : AppCompatActivity() {
                             }
                         }, 2000)
                     }
-                    
+
                     override fun onError(utteranceId: String?) {
                         // TTS error
                     }
@@ -252,9 +255,7 @@ class MockInterviewActivity : AppCompatActivity() {
 
     private fun setupUI() {
         bottomNavHelper.setupBottomNav(
-            this,
-            binding.bottomNavigation,
-            R.id.nav_mock_interview
+            this, binding.bottomNavigation, R.id.nav_mock_interview
         )
 
         binding.btnHistory.setOnClickListener {
@@ -323,12 +324,13 @@ class MockInterviewActivity : AppCompatActivity() {
 
         // Start interview button
         binding.btnStartInterview.setOnClickListener {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) 
-                != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(
+            if (ContextCompat.checkSelfPermission(
                     this,
-                    arrayOf(Manifest.permission.RECORD_AUDIO),
-                    1002
+                    Manifest.permission.RECORD_AUDIO
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this, arrayOf(Manifest.permission.RECORD_AUDIO), 1002
                 )
             } else {
                 viewModel.startInterview()
@@ -339,7 +341,7 @@ class MockInterviewActivity : AppCompatActivity() {
         binding.btnSpeakQuestion.setOnClickListener {
             speakCurrentQuestion()
         }
-        
+
         binding.btnSilenceTts.setOnClickListener {
             // Stop current TTS playback
             textToSpeech?.stop()
@@ -364,8 +366,7 @@ class MockInterviewActivity : AppCompatActivity() {
         }
 
         // Enable scrolling for the multiline edit text
-        @SuppressLint("ClickableViewAccessibility")
-        binding.etAnswer.setOnTouchListener { v, event ->
+        @SuppressLint("ClickableViewAccessibility") binding.etAnswer.setOnTouchListener { v, event ->
             if (v.id == R.id.et_answer) {
                 v.parent.requestDisallowInterceptTouchEvent(true)
                 when (event.action and MotionEvent.ACTION_MASK) {
@@ -401,32 +402,45 @@ class MockInterviewActivity : AppCompatActivity() {
         binding.btnRetry.setOnClickListener {
             viewModel.reset()
         }
+
+        binding.btnHistory.setOnClickListener {
+            showHistoryDialog()
+        }
+
+        binding.tvTokens.setOnClickListener {
+            startActivity(
+                Intent(
+                    this, com.tarunguptaraja.coldemailer.presentation.shop.ShopActivity::class.java
+                )
+            )
+        }
     }
 
     // ==================== SPEECH ====================
 
     private fun speakCurrentQuestion() {
         if (!ttsInitialized) return
-        
+
         val currentState = viewModel.uiState.value as? InterviewUiState.InProgress
         val question = currentState?.currentQuestion
-        
+
         question?.let {
             binding.btnSpeakQuestion.visibility = View.GONE
             binding.btnSilenceTts.visibility = View.VISIBLE
-            
+
             // Speak with utterance ID to track completion
             textToSpeech?.speak(it.question, TextToSpeech.QUEUE_FLUSH, null, "question_${it.id}")
         }
     }
 
     private fun startListening() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) 
-            != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
+        if (ContextCompat.checkSelfPermission(
                 this,
-                arrayOf(Manifest.permission.RECORD_AUDIO),
-                RECORD_AUDIO_PERMISSION_CODE
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this, arrayOf(Manifest.permission.RECORD_AUDIO), RECORD_AUDIO_PERMISSION_CODE
             )
             return
         }
@@ -434,7 +448,9 @@ class MockInterviewActivity : AppCompatActivity() {
         mediaActionSound?.play(MediaActionSound.START_VIDEO_RECORDING)
 
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(
+                RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+            )
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
         }
@@ -448,20 +464,19 @@ class MockInterviewActivity : AppCompatActivity() {
     }
 
     private fun checkAudioPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) 
-            != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
+        if (ContextCompat.checkSelfPermission(
                 this,
-                arrayOf(Manifest.permission.RECORD_AUDIO),
-                RECORD_AUDIO_PERMISSION_CODE
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this, arrayOf(Manifest.permission.RECORD_AUDIO), RECORD_AUDIO_PERMISSION_CODE
             )
         }
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 1002) {
@@ -470,7 +485,9 @@ class MockInterviewActivity : AppCompatActivity() {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission granted
             } else {
-                Toast.makeText(this, "Microphone permission required for voice input", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    this, "Microphone permission required for voice input", Toast.LENGTH_LONG
+                ).show()
                 binding.voiceContainer.visibility = View.GONE
                 binding.textInputContainer.visibility = View.VISIBLE
             }
@@ -483,7 +500,7 @@ class MockInterviewActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.tokens.collect { tokens ->
-                    binding.tvTokens.text = "%,d Tokens".format(tokens)
+                    binding.tvTokens.text = "$tokens Tokens"
                 }
             }
         }
@@ -503,14 +520,6 @@ class MockInterviewActivity : AppCompatActivity() {
                 }
             }
         }
-
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.tokenBreakdown.collect { breakdown ->
-                    updateTokenBreakdown(breakdown)
-                }
-            }
-        }
     }
 
     private fun showHistoryDialog() {
@@ -521,18 +530,15 @@ class MockInterviewActivity : AppCompatActivity() {
         }
 
         val items = history.map { record ->
-            val date = java.text.SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault()).format(java.util.Date(record.timestamp))
+            val date = java.text.SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
+                .format(java.util.Date(record.timestamp))
             "${record.jobRole} - Score: ${record.result.overallScore}/100\n$date"
         }.toTypedArray()
 
-        AlertDialog.Builder(this)
-            .setTitle("Interview History")
-            .setItems(items) { _, which ->
+        AlertDialog.Builder(this).setTitle("Interview History").setItems(items) { _, which ->
                 val record = history[which]
                 showHistoryDetailsDialog(record)
-            }
-            .setPositiveButton("Close", null)
-            .show()
+            }.setPositiveButton("Close", null).show()
     }
 
     private fun showHistoryDetailsDialog(record: com.tarunguptaraja.coldemailer.domain.model.InterviewHistoryRecord) {
@@ -550,11 +556,8 @@ class MockInterviewActivity : AppCompatActivity() {
             message.append("Feedback: ${qa.feedback} (Score: ${qa.score}/100)\n\n")
         }
 
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Interview Details")
-            .setMessage(message.toString())
-            .setPositiveButton("Close", null)
-            .show()
+        androidx.appcompat.app.AlertDialog.Builder(this).setTitle("Interview Details")
+            .setMessage(message.toString()).setPositiveButton("Close", null).show()
     }
 
     private fun updateUIState(state: InterviewUiState) {
@@ -571,22 +574,25 @@ class MockInterviewActivity : AppCompatActivity() {
                 binding.setupContainer.visibility = View.VISIBLE
                 binding.bottomNavigation.visibility = View.VISIBLE
             }
+
             is InterviewUiState.Loading -> {
                 binding.loadingContainer.visibility = View.VISIBLE
                 binding.bottomNavigation.visibility = View.GONE
                 binding.tvLoadingMessage.text = state.message
             }
+
             is InterviewUiState.InProgress -> {
                 binding.interviewContainer.visibility = View.VISIBLE
                 binding.bottomNavigation.visibility = View.GONE
                 updateInterviewUI(state)
             }
+
             is InterviewUiState.Evaluating -> {
                 binding.evaluatingContainer.visibility = View.VISIBLE
                 binding.bottomNavigation.visibility = View.GONE
                 binding.tvEvaluatingMessage.text = state.progress
-                binding.tvEvaluatingTokens.text = "Session tokens used: ${state.sessionTokensUsed}"
             }
+
             is InterviewUiState.Completed -> {
                 binding.resultsContainer.visibility = View.VISIBLE
                 binding.bottomNavigation.visibility = View.VISIBLE
@@ -598,7 +604,8 @@ class MockInterviewActivity : AppCompatActivity() {
     private fun updateSetupUI(state: InterviewSetupState) {
         // Update JD file name
         binding.tvJdFileName.text = state.jobDescriptionFileName.ifEmpty { "No JD file selected" }
-        binding.btnClearJd.visibility = if (state.jobDescriptionUri != null) View.VISIBLE else View.GONE
+        binding.btnClearJd.visibility =
+            if (state.jobDescriptionUri != null) View.VISIBLE else View.GONE
 
         // Update Resume file name
         binding.tvResumeFileName.text = state.resumeFileName.ifEmpty { "No resume selected" }
@@ -610,26 +617,42 @@ class MockInterviewActivity : AppCompatActivity() {
 
         // Update loading state
         binding.progressLoading.visibility = if (state.isLoading) View.VISIBLE else View.GONE
+
+        // Update Start Button text with token cost
+        val btnText = "Start Mock Interview   ${state.estimatedCost}"
+        val spannable = SpannableStringBuilder(btnText)
+        val icon = ContextCompat.getDrawable(this@MockInterviewActivity, R.drawable.ic_token)
+        icon?.let {
+            val size = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._14sdp)
+            it.setBounds(0, 0, size, size)
+            val imageSpan = ImageSpan(it, ImageSpan.ALIGN_CENTER)
+            val iconIndex = btnText.indexOf("  ") + 1
+            spannable.setSpan(
+                imageSpan, iconIndex, iconIndex + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+        binding.btnStartInterview.text = spannable
     }
 
     private fun updateInterviewUI(state: InterviewUiState.InProgress) {
         val currentQuestion = state.currentQuestion
-        
+
         currentQuestion?.let { question ->
             binding.tvQuestion.text = question.question
-            binding.tvCategory.text = if (question.isFollowUp) "Follow-up: ${question.category}" else question.category
-            binding.tvProgress.text = "${state.sessionState.questionsAsked.size}/${state.sessionState.maxQuestions}"
-            
+            binding.tvCategory.text =
+                if (question.isFollowUp) "Follow-up: ${question.category}" else question.category
+            binding.tvProgress.text =
+                "${state.sessionState.questionsAsked.size}/${state.sessionState.maxQuestions}"
+
             // Update progress indicator
-            binding.progressIndicator.progress = ((state.sessionState.questionsAsked.size) * 100) / state.sessionState.maxQuestions
-            
-            // Update session tokens
-            binding.tvSessionTokens.text = "Session Tokens: ${state.sessionTokensUsed}"
-            
+            binding.progressIndicator.progress =
+                ((state.sessionState.questionsAsked.size) * 100) / state.sessionState.maxQuestions
+
+
             // Reset TTS buttons and auto-play
             binding.btnSpeakQuestion.visibility = View.VISIBLE
             binding.btnSilenceTts.visibility = View.GONE
-            
+
             // Auto-speak the question
             speakCurrentQuestion()
         }
@@ -639,7 +662,6 @@ class MockInterviewActivity : AppCompatActivity() {
         // Update score
         binding.tvFinalScore.text = state.result.overallScore.toString()
         binding.scoreProgress.progress = state.result.overallScore
-        binding.tvTotalTokens.text = "Total tokens used: ${state.totalTokensUsed}"
 
         // Update strengths
         binding.tvStrengths.text = state.result.strengths.joinToString("\n") { "• $it" }
@@ -651,13 +673,7 @@ class MockInterviewActivity : AppCompatActivity() {
         questionAnalysisAdapter.submitList(state.result.questionAnalysis)
     }
 
-    private fun updateTokenBreakdown(breakdown: TokenUsageBreakdown) {
-        val sb = StringBuilder()
-        sb.appendLine("Question Generation: ${breakdown.questionGeneration}")
-        sb.appendLine("Answer Evaluations: ${breakdown.answerEvaluations.values.sum()}")
-        sb.appendLine("Final Report: ${breakdown.finalReport}")
-        binding.tvTokenBreakdown.text = sb.toString()
-    }
+
 
     // ==================== HELPERS ====================
 
@@ -667,7 +683,8 @@ class MockInterviewActivity : AppCompatActivity() {
             val cursor = contentResolver.query(uri, null, null, null, null)
             try {
                 if (cursor != null && cursor.moveToFirst()) {
-                    result = cursor.getString(cursor.getColumnIndexOrThrow(android.provider.OpenableColumns.DISPLAY_NAME))
+                    result =
+                        cursor.getString(cursor.getColumnIndexOrThrow(android.provider.OpenableColumns.DISPLAY_NAME))
                 }
             } finally {
                 cursor?.close()
@@ -688,7 +705,11 @@ class MockInterviewActivity : AppCompatActivity() {
         val state = viewModel.uiState.value
         if (state is InterviewUiState.InProgress || state is InterviewUiState.Evaluating) {
             // Show confirmation dialog or handle back press in interview
-            Toast.makeText(this, "Interview in progress. Please complete or skip remaining questions.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this,
+                "Interview in progress. Please complete or skip remaining questions.",
+                Toast.LENGTH_SHORT
+            ).show()
         } else {
             super.onBackPressed()
         }

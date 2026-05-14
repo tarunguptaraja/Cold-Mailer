@@ -21,6 +21,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import com.tarunguptaraja.coldemailer.R
 import com.tarunguptaraja.coldemailer.BottomNavHelper
+import com.tarunguptaraja.coldemailer.presentation.history.TransactionHistoryActivity
+import com.tarunguptaraja.coldemailer.presentation.shop.ShopActivity
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -89,6 +91,14 @@ class AtsScorerActivity : AppCompatActivity() {
             binding.resultsContainer.visibility = View.GONE
             binding.inputCard.visibility = View.VISIBLE
         }
+
+        binding.btnHistory.setOnClickListener {
+            startActivity(Intent(this, TransactionHistoryActivity::class.java))
+        }
+
+        binding.tvTokens.setOnClickListener {
+            startActivity(Intent(this, ShopActivity::class.java))
+        }
     }
 
     private fun observeState() {
@@ -97,7 +107,19 @@ class AtsScorerActivity : AppCompatActivity() {
                 viewModel.uiState.collect { state ->
                     binding.progressLoading.visibility = if (state.isLoading) View.VISIBLE else View.GONE
                     binding.btnCalculate.isEnabled = !state.isLoading
-                    binding.tvTokens.text = "%,d Tokens".format(state.tokensRemaining)
+                    binding.tvTokens.text = "${state.tokensRemaining} Tokens"
+                    
+                    val btnText = "Calculate ATS Score   ${state.atsCost}"
+                    val spannable = android.text.SpannableStringBuilder(btnText)
+                    val icon = androidx.core.content.ContextCompat.getDrawable(this@AtsScorerActivity, R.drawable.ic_token)
+                    icon?.let {
+                        val size = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._14sdp)
+                        it.setBounds(0, 0, size, size)
+                        val imageSpan = android.text.style.ImageSpan(it, android.text.style.ImageSpan.ALIGN_CENTER)
+                        val iconIndex = btnText.indexOf("  ") + 1
+                        spannable.setSpan(imageSpan, iconIndex, iconIndex + 1, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    }
+                    binding.btnCalculate.text = spannable
                     
                     binding.tvResumeName.text = if (state.resumeFileName.isEmpty()) "No Resume Selected" else state.resumeFileName
 

@@ -12,5 +12,6 @@ data class JobAnalysis(
     val subject: String? = null,
     val atsScore: Int? = null,
     val atsFeedback: List<String>? = null,
-    val tokensUsed: Int = 0
+    val inputTokens: Int = 0,
+    val outputTokens: Int = 0
 )

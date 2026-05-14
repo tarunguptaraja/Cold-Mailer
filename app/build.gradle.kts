@@ -98,4 +98,5 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.config)
     implementation(libs.jsoup)
+    implementation(libs.billing.ktx)
 }

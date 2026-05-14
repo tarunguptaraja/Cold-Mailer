@@ -39,21 +39,35 @@
             app:layout_constraintTop_toTopOf="parent"
             app:tint="@color/white" />
 
-        <TextView
-            android:id="@+id/tv_tokens"
+        <LinearLayout
+            android:id="@+id/container_tokens"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/_8sdp"
             android:background="@drawable/bg_token_chip"
-            android:fontFamily="@font/montserrat_bold"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
             android:paddingHorizontal="@dimen/_8sdp"
             android:paddingVertical="@dimen/_4sdp"
-            android:text="100k Tokens"
-            android:textColor="@color/white"
-            android:textSize="@dimen/_10sdp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btn_history"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:layout_width="@dimen/_16sdp"
+                android:layout_height="@dimen/_16sdp"
+                android:src="@drawable/ic_token" />
+
+            <TextView
+                android:id="@+id/tv_tokens"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/_4sdp"
+                android:fontFamily="@font/montserrat_bold"
+                android:text="100k Tokens"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_10sdp" />
+        </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- ==================== SETUP SCREEN ==================== -->
@@ -560,6 +574,7 @@
                     android:text="Session Tokens: 0"
                     android:textColor="@color/colorTextSecondary"
                     android:textSize="@dimen/_11sdp"
+                    android:visibility="gone"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/progress_section" />
 
@@ -796,7 +811,8 @@
             android:fontFamily="@font/montserrat"
             android:text="Session tokens used: 0"
             android:textColor="@color/colorTextSecondary"
-            android:textSize="@dimen/_12sdp" />
+            android:textSize="@dimen/_12sdp"
+            android:visibility="gone" />
     </LinearLayout>
 
     <!-- ==================== RESULTS SCREEN ==================== -->
@@ -873,44 +889,19 @@
                         android:fontFamily="@font/montserrat"
                         android:text="Total tokens used: 2,450"
                         android:textColor="@color/colorTextSecondary"
-                        android:textSize="@dimen/_12sdp" />
+                        android:textSize="@dimen/_12sdp"
+                        android:visibility="gone" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Token Breakdown -->
+            <!-- Token Breakdown Hidden -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/_16sdp"
+                android:visibility="gone"
                 app:cardCornerRadius="@dimen/_12sdp"
-                app:cardElevation="@dimen/_2sdp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#E3F2FD"
-                    android:orientation="vertical"
-                    android:padding="@dimen/_16sdp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/montserrat_bold"
-                        android:text="Token Usage Breakdown"
-                        android:textColor="#1976D2"
-                        android:textSize="@dimen/_14sdp" />
-
-                    <TextView
-                        android:id="@+id/tv_token_breakdown"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/_8sdp"
-                        android:fontFamily="@font/montserrat"
-                        android:text="Question Generation: 450\nAnswer Evaluations: 1,500\nFinal Report: 500"
-                        android:textColor="@color/colorTextPrimary"
-                        android:textSize="@dimen/_12sdp" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                app:cardElevation="@dimen/_2sdp" />
 
             <!-- Strengths -->
             <TextView

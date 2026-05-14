@@ -35,6 +35,8 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var bottomNavHelper: BottomNavHelper
+    
+    private var isDailyBonusDialogShowing = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,6 +100,10 @@ class MainActivity : AppCompatActivity() {
         binding.btnViewHistory.setOnClickListener {
             startActivity(Intent(this, com.tarunguptaraja.coldemailer.presentation.history.TransactionHistoryActivity::class.java))
         }
+        
+        binding.tvTokens.setOnClickListener {
+            startActivity(Intent(this, com.tarunguptaraja.coldemailer.presentation.shop.ShopActivity::class.java))
+        }
     }
 
     private fun observeState() {
@@ -144,9 +150,38 @@ class MainActivity : AppCompatActivity() {
                         Toast.makeText(this@MainActivity, it, Toast.LENGTH_SHORT).show()
                         viewModel.clearMessage()
                     }
+
+                    // Show Daily Bonus Popup
+                    state.dailyBonusAmount?.let { amount ->
+                        if (!isDailyBonusDialogShowing) {
+                            showDailyBonusPopup(amount)
+                        }
+                    } ?: run {
+                        isDailyBonusDialogShowing = false
+                    }
                 }
             }
         }
+    }
+
+    private fun showDailyBonusPopup(amount: Long) {
+        if (isFinishing || isDestroyed || isDailyBonusDialogShowing) return
+        isDailyBonusDialogShowing = true
+        
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Daily Bonus!")
+            .setMessage("You've received $amount tokens for logging in today!")
+            .setIcon(R.drawable.ic_token)
+            .setCancelable(false)
+            .setPositiveButton("Claim") { dialog, _ ->
+                viewModel.claimDailyBonus()
+                dialog.dismiss()
+            }
+            .setNegativeButton("Later") { dialog, _ ->
+                viewModel.dismissDailyBonus()
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun renderRoles(roles: List<JobRole>) {

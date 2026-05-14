@@ -10,5 +10,6 @@ data class AtsReport(
     val weaknesses: List<String>,
     val missingKeywords: List<String>,
     val improvementTips: List<String>,
-    val tokensUsed: Int = 0
+    val inputTokens: Int = 0,
+    val outputTokens: Int = 0
 )

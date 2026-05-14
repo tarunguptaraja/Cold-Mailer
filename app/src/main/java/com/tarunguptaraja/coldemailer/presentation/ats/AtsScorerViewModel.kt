@@ -3,11 +3,15 @@ package com.tarunguptaraja.coldemailer.presentation.ats
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tarunguptaraja.coldemailer.GeminiManager
 import com.tarunguptaraja.coldemailer.ProfilePreferenceManager
 import com.tarunguptaraja.coldemailer.ResumeParser
 import com.tarunguptaraja.coldemailer.domain.model.AtsReport
+import com.tarunguptaraja.coldemailer.domain.use_case.CalculateAtsScoreUseCase
+import com.tarunguptaraja.coldemailer.domain.use_case.DeductTokensUseCase
+import com.tarunguptaraja.coldemailer.domain.use_case.LogGeminiTokensUseCase
+import com.tarunguptaraja.coldemailer.domain.use_case.GetRemainingTokensUseCase
 import com.tarunguptaraja.coldemailer.TokenManager
+import com.tarunguptaraja.coldemailer.RemoteConfigManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,16 +28,20 @@ data class AtsScorerUiState(
     val resumeText: String = "",
     val atsReport: AtsReport? = null,
     val error: String? = null,
-    val tokensRemaining: Long = 100000L
+    val tokensRemaining: Long = 100000L,
+    val atsCost: Int = 2
 )
 
 @HiltViewModel
 class AtsScorerViewModel @Inject constructor(
-    private val geminiManager: GeminiManager,
+    private val calculateAtsScoreUseCase: CalculateAtsScoreUseCase,
+    private val deductTokensUseCase: DeductTokensUseCase,
+    private val logGeminiTokensUseCase: LogGeminiTokensUseCase,
+    private val getRemainingTokensUseCase: GetRemainingTokensUseCase,
     private val resumeParser: ResumeParser,
     private val profilePreferenceManager: ProfilePreferenceManager,
     private val tokenManager: TokenManager,
-    private val userManager: com.tarunguptaraja.coldemailer.UserManager
+    private val remoteConfigManager: RemoteConfigManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AtsScorerUiState())
@@ -53,18 +61,21 @@ class AtsScorerViewModel @Inject constructor(
     }
 
     private fun loadInitialData() {
-        // Load the first available resume from profile if exists
         viewModelScope.launch {
+            remoteConfigManager.fetchAndActivate()
+            _uiState.value = _uiState.value.copy(
+                atsCost = remoteConfigManager.getCostAts().toInt()
+            )
             val profile = profilePreferenceManager.getProfile()
             profile?.roles?.firstOrNull()?.let { role ->
                 _uiState.value = _uiState.value.copy(
                     resumeFileName = role.resumeFileName,
                     resumeText = role.resumeText,
-                    tokensRemaining = tokenManager.getRemainingTokens()
+                    tokensRemaining = getRemainingTokensUseCase()
                 )
             } ?: run {
                 _uiState.value = _uiState.value.copy(
-                    tokensRemaining = tokenManager.getRemainingTokens()
+                    tokensRemaining = getRemainingTokensUseCase()
                 )
             }
         }
@@ -99,12 +110,13 @@ class AtsScorerViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            if (!tokenManager.hasSufficientTokens()) {
-                _uiState.value = _uiState.value.copy(error = "AI Credits exhausted (100k limit). Please contact support.")
+            val cost = remoteConfigManager.getCostAts()
+            if (getRemainingTokensUseCase() < cost) {
+                _uiState.value = _uiState.value.copy(error = "Not enough tokens. Required: $cost")
                 return@launch
             }
             _uiState.value = _uiState.value.copy(isLoading = true, error = null, atsReport = null)
-            val report = geminiManager.calculateAtsScore(
+            val report = calculateAtsScoreUseCase(
                 jobProfile = state.jobProfile,
                 experience = state.experience,
                 resumeText = state.resumeText
@@ -112,16 +124,8 @@ class AtsScorerViewModel @Inject constructor(
             
             if (report != null) {
                 _uiState.value = _uiState.value.copy(atsReport = report, isLoading = false)
-                tokenManager.deductTokens(report.tokensUsed)
-                
-                val tx = com.tarunguptaraja.coldemailer.domain.model.TokenTransaction(
-                    id = java.util.UUID.randomUUID().toString(),
-                    amount = report.tokensUsed,
-                    type = "DEDUCTION",
-                    description = "ATS Analysis: ${state.jobProfile}",
-                    timestamp = System.currentTimeMillis()
-                )
-                userManager.addTokenTransaction(tx)
+                deductTokensUseCase(cost.toInt(), "ATS Analysis: ${state.jobProfile}")
+                logGeminiTokensUseCase(report.inputTokens, report.outputTokens, "ATS")
             } else {
                 _uiState.value = _uiState.value.copy(isLoading = false, error = "Failed to calculate ATS score. Please try again.")
             }

@@ -24,6 +24,7 @@ sdpAndroid = "1.1.1"
 secrets = "2.0.1"
 kotlinxSerializationJson = "1.7.3"
 jsoup = "1.17.2"
+billing = "7.1.1"
 
 
 [libraries]
@@ -53,6 +54,7 @@ sdp-android = { module = "com.intuit.sdp:sdp-android", version.ref = "sdpAndroid
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+billing-ktx = { module = "com.android.billingclient:billing-ktx", version.ref = "billing" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

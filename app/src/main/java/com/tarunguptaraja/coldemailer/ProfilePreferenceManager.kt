@@ -22,6 +22,7 @@ class ProfilePreferenceManager @Inject constructor(@ApplicationContext context: 
         private const val PREFS_NAME = "ColdEmailerPrefs"
         private const val KEY_NAME = "name"
         private const val KEY_CONTACT_NUMBER = "contactNumber"
+        private const val KEY_USER_ID = "userId"
         private const val KEY_ROLES_JSON = "rolesJson"
         
         // Legacy keys for migration
@@ -40,6 +41,7 @@ class ProfilePreferenceManager @Inject constructor(@ApplicationContext context: 
         sharedPreferences.edit {
             putString(KEY_NAME, profile.name)
             putString(KEY_CONTACT_NUMBER, profile.contactNumber)
+            putString(KEY_USER_ID, profile.userId)
             putString(KEY_ROLES_JSON, json.encodeToString(profile.roles))
             putLong(KEY_LAST_UPDATED, profile.lastUpdated)
         }
@@ -48,6 +50,7 @@ class ProfilePreferenceManager @Inject constructor(@ApplicationContext context: 
     fun getProfile(): Profile? {
         val name = sharedPreferences.getString(KEY_NAME, null)
         val contactNumber = sharedPreferences.getString(KEY_CONTACT_NUMBER, "") ?: ""
+        val userId = sharedPreferences.getString(KEY_USER_ID, "") ?: ""
         val rolesJson = sharedPreferences.getString(KEY_ROLES_JSON, null)
         val lastUpdated = sharedPreferences.getLong(KEY_LAST_UPDATED, 0L)
 
@@ -61,7 +64,7 @@ class ProfilePreferenceManager @Inject constructor(@ApplicationContext context: 
             } else {
                 migrateLegacyData()
             }
-            Profile(name, contactNumber, roles, lastUpdated)
+            Profile(name, contactNumber, userId, roles, lastUpdated)
         } else {
             null
         }

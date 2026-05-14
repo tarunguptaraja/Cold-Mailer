@@ -10,6 +10,9 @@ import com.tarunguptaraja.coldemailer.domain.use_case.ExtractResumeTextUseCase
 import com.tarunguptaraja.coldemailer.domain.use_case.GetProfileUseCase
 import com.tarunguptaraja.coldemailer.domain.use_case.SaveProfileUseCase
 import com.tarunguptaraja.coldemailer.domain.use_case.DeleteRoleUseCase
+import com.tarunguptaraja.coldemailer.domain.use_case.CheckDailyBonusUseCase
+import com.tarunguptaraja.coldemailer.domain.use_case.ClaimDailyBonusUseCase
+import com.tarunguptaraja.coldemailer.domain.use_case.GetRemainingTokensUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +26,7 @@ data class ProfileUiState(
     val originalName: String = "",
     val contactNumber: String = "",
     val originalContactNumber: String = "",
+    val userId: String = "",
     val roles: List<JobRole> = emptyList(),
     val currentRoleId: String? = null,
     val currentRoleName: String = "",
@@ -35,7 +39,8 @@ data class ProfileUiState(
     val isProfileSaved: Boolean = false,
     val hasChanges: Boolean = false,
     val remainingTokens: Long = 100000L,
-    val transactions: List<com.tarunguptaraja.coldemailer.domain.model.TokenTransaction> = emptyList()
+    val transactions: List<com.tarunguptaraja.coldemailer.domain.model.TokenTransaction> = emptyList(),
+    val dailyBonusAmount: Long? = null
 )
 
 @HiltViewModel
@@ -44,8 +49,12 @@ class ProfileViewModel @Inject constructor(
     private val saveProfileUseCase: SaveProfileUseCase,
     private val deleteRoleUseCase: DeleteRoleUseCase,
     private val extractResumeTextUseCase: ExtractResumeTextUseCase,
+    private val checkDailyBonusUseCase: CheckDailyBonusUseCase,
+    private val claimDailyBonusUseCase: ClaimDailyBonusUseCase,
+    private val getRemainingTokensUseCase: GetRemainingTokensUseCase,
+    private val profilePreferenceManager: com.tarunguptaraja.coldemailer.ProfilePreferenceManager,
     private val tokenManager: TokenManager,
-    private val profilePreferenceManager: com.tarunguptaraja.coldemailer.ProfilePreferenceManager
+    private val userManager: com.tarunguptaraja.coldemailer.UserManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -55,10 +64,36 @@ class ProfileViewModel @Inject constructor(
         loadProfile()
         observeTokens()
         loadTransactions()
+        checkDailyBonus()
     }
 
     private fun loadTransactions() {
         _uiState.value = _uiState.value.copy(transactions = profilePreferenceManager.getTransactions())
+    }
+
+    private fun checkDailyBonus() {
+        viewModelScope.launch {
+            val bonus = checkDailyBonusUseCase()
+            if (bonus != null) {
+                _uiState.value = _uiState.value.copy(dailyBonusAmount = bonus)
+            }
+        }
+    }
+
+    fun claimDailyBonus() {
+        val amount = _uiState.value.dailyBonusAmount ?: return
+        
+        viewModelScope.launch {
+            claimDailyBonusUseCase(amount)
+            _uiState.value = _uiState.value.copy(
+                dailyBonusAmount = null,
+                message = "Claimed $amount daily bonus tokens!"
+            )
+        }
+    }
+
+    fun dismissDailyBonus() {
+        _uiState.value = _uiState.value.copy(dailyBonusAmount = null)
     }
 
     private fun observeTokens() {
@@ -77,6 +112,7 @@ class ProfileViewModel @Inject constructor(
                 originalName = it.name,
                 contactNumber = it.contactNumber,
                 originalContactNumber = it.contactNumber,
+                userId = it.userId.ifBlank { UUID.randomUUID().toString() },
                 roles = it.roles,
                 remainingTokens = tokenManager.getRemainingTokens()
             )
@@ -199,7 +235,7 @@ class ProfileViewModel @Inject constructor(
         _uiState.value = state.copy(
             roles = updatedRoles, currentRoleId = null, message = "Role saved"
         )
-        val profile = Profile(state.name, state.contactNumber, updatedRoles, System.currentTimeMillis())
+        val profile = Profile(state.name, state.contactNumber, state.userId, updatedRoles, System.currentTimeMillis())
         saveProfileUseCase(profile)
     }
 
@@ -209,7 +245,7 @@ class ProfileViewModel @Inject constructor(
 
     private fun saveProfile() {
         val state = _uiState.value
-        val profile = Profile(state.name, state.contactNumber, state.roles, System.currentTimeMillis())
+        val profile = Profile(state.name, state.contactNumber, state.userId, state.roles, System.currentTimeMillis())
         saveProfileUseCase(profile)
     }
 

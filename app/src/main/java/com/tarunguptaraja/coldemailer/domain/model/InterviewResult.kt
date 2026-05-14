@@ -8,5 +8,6 @@ data class InterviewResult(
     val strengths: List<String>,
     val weaknesses: List<String>,
     val questionAnalysis: List<QuestionAnalysis>,
-    val tokensUsed: Int = 0
+    val inputTokens: Int = 0,
+    val outputTokens: Int = 0
 )

@@ -29,21 +29,35 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/tv_tokens"
+        <LinearLayout
+            android:id="@+id/container_tokens"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/_12sdp"
             android:background="@drawable/bg_token_chip"
-            android:fontFamily="@font/montserrat_bold"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
             android:paddingHorizontal="@dimen/_8sdp"
             android:paddingVertical="@dimen/_4sdp"
-            android:text="100k Tokens"
-            android:textColor="@color/white"
-            android:textSize="@dimen/_10sdp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/btn_history"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:layout_width="@dimen/_18sdp"
+                android:layout_height="@dimen/_18sdp"
+                android:src="@drawable/ic_token" />
+
+            <TextView
+                android:id="@+id/tv_tokens"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/_4sdp"
+                android:fontFamily="@font/montserrat_bold"
+                android:text="100k Tokens"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_12sdp" />
+        </LinearLayout>
 
         <ImageView
             android:id="@+id/btn_history"
@@ -225,7 +239,7 @@
                             android:fontFamily="@font/montserrat_bold"
                             android:paddingVertical="@dimen/_10sdp"
                             android:text="@string/btn_analyze_ai"
-                            android:textSize="@dimen/_13sdp"
+                            android:textSize="@dimen/_12sdp"
                             app:backgroundTint="@color/colorAccent"
                             app:cornerRadius="@dimen/_8sdp" />
 
@@ -236,7 +250,7 @@
                             android:fontFamily="@font/montserrat_bold"
                             android:paddingVertical="@dimen/_10sdp"
                             android:text="Clear"
-                            android:textSize="@dimen/_13sdp"
+                            android:textSize="@dimen/_12sdp"
                             app:backgroundTint="@color/colorTextSecondary"
                             app:cornerRadius="@dimen/_8sdp" />
                     </LinearLayout>

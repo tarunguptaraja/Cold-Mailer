@@ -10,5 +10,6 @@ data class QuestionAnalysis(
     val score: Int,
     val feedback: String,
     val suggestedAnswer: String,
-    val tokensUsed: Int = 0
+    val inputTokens: Int = 0,
+    val outputTokens: Int = 0
 )

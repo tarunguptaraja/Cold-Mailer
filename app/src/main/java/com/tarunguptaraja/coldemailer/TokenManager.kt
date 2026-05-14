@@ -17,6 +17,7 @@ class TokenManager @Inject constructor(@ApplicationContext context: Context) {
     companion object {
         private const val PREFS_NAME = "ColdEmailerTokenPrefs"
         private const val KEY_REMAINING_TOKENS = "remaining_tokens"
+        private const val KEY_LAST_DAILY_BONUS_DATE = "last_daily_bonus_date"
         private const val DEFAULT_TOKENS = 100000L
     }
 
@@ -45,5 +46,20 @@ class TokenManager @Inject constructor(@ApplicationContext context: Context) {
             putLong(KEY_REMAINING_TOKENS, count)
         }
         _tokens.value = count
+    }
+
+    fun addTokens(count: Long) {
+        val current = getRemainingTokens()
+        setTokens(current + count)
+    }
+
+    fun getLastDailyBonusDate(): String? {
+        return sharedPreferences.getString(KEY_LAST_DAILY_BONUS_DATE, null)
+    }
+
+    fun setLastDailyBonusDate(dateStr: String) {
+        sharedPreferences.edit {
+            putString(KEY_LAST_DAILY_BONUS_DATE, dateStr)
+        }
     }
 }

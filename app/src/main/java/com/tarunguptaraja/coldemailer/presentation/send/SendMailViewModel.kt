@@ -10,7 +10,11 @@ import com.tarunguptaraja.coldemailer.domain.use_case.AddHistoryUseCase
 import com.tarunguptaraja.coldemailer.domain.use_case.AnalyzeJobUseCase
 import com.tarunguptaraja.coldemailer.domain.use_case.GetProfileUseCase
 import com.tarunguptaraja.coldemailer.domain.use_case.ScrapeUrlUseCase
+import com.tarunguptaraja.coldemailer.RemoteConfigManager
 import com.tarunguptaraja.coldemailer.TokenManager
+import com.tarunguptaraja.coldemailer.domain.use_case.DeductTokensUseCase
+import com.tarunguptaraja.coldemailer.domain.use_case.LogGeminiTokensUseCase
+import com.tarunguptaraja.coldemailer.domain.use_case.GetRemainingTokensUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,7 +38,8 @@ data class SendMailUiState(
     val role: String? = null,
     val atsScore: Int? = null,
     val atsFeedback: List<String>? = null,
-    val tokensRemaining: Long = 100000L
+    val tokensRemaining: Long = 100000L,
+    val analyzeCost: Int = 1
 )
 
 @HiltViewModel
@@ -43,15 +48,18 @@ class SendMailViewModel @Inject constructor(
     private val analyzeJobUseCase: AnalyzeJobUseCase,
     private val addHistoryUseCase: AddHistoryUseCase,
     private val scrapeUrlUseCase: ScrapeUrlUseCase,
+    private val deductTokensUseCase: DeductTokensUseCase,
+    private val logGeminiTokensUseCase: LogGeminiTokensUseCase,
+    private val getRemainingTokensUseCase: GetRemainingTokensUseCase,
     private val tokenManager: TokenManager,
-    private val userManager: com.tarunguptaraja.coldemailer.UserManager
+    private val remoteConfigManager: RemoteConfigManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SendMailUiState())
     val uiState: StateFlow<SendMailUiState> = _uiState.asStateFlow()
 
     init {
-        loadProfile()
+        loadInitialData()
         observeTokens()
     }
 
@@ -63,14 +71,19 @@ class SendMailViewModel @Inject constructor(
         }
     }
 
-    private fun loadProfile() {
-        val profile = getProfileUseCase()
-        _uiState.value = _uiState.value.copy(
-            profile = profile,
-            roles = profile?.roles ?: emptyList(),
-            selectedRole = profile?.roles?.firstOrNull(),
-            tokensRemaining = tokenManager.getRemainingTokens()
-        )
+    private fun loadInitialData() {
+        viewModelScope.launch {
+            remoteConfigManager.fetchAndActivate()
+            _uiState.value = _uiState.value.copy(
+                analyzeCost = remoteConfigManager.getCostEmail().toInt()
+            )
+            val profile = getProfileUseCase()
+            _uiState.value = _uiState.value.copy(
+                profile = profile,
+                roles = profile?.roles ?: emptyList(),
+                selectedRole = profile?.roles?.firstOrNull()
+            )
+        }
     }
 
     fun onJdTextChanged(text: String) {
@@ -128,10 +141,11 @@ class SendMailViewModel @Inject constructor(
             analysisError = null
         )
         
-        if (!tokenManager.hasSufficientTokens()) {
+        val cost = remoteConfigManager.getCostEmail()
+        if (getRemainingTokensUseCase() < cost) {
             _uiState.value = _uiState.value.copy(
                 isAnalyzing = false,
-                analysisError = "AI Credits exhausted (100k limit). Please contact support."
+                analysisError = "Not enough tokens. Required: $cost"
             )
             return
         }
@@ -169,16 +183,8 @@ class SendMailViewModel @Inject constructor(
                     atsScore = result.atsScore,
                     atsFeedback = result.atsFeedback
                 )
-                tokenManager.deductTokens(result.tokensUsed)
-                
-                val tx = com.tarunguptaraja.coldemailer.domain.model.TokenTransaction(
-                    id = java.util.UUID.randomUUID().toString(),
-                    amount = result.tokensUsed,
-                    type = "DEDUCTION",
-                    description = "AI Mail Analysis: ${result.company ?: "Unknown"}",
-                    timestamp = System.currentTimeMillis()
-                )
-                userManager.addTokenTransaction(tx)
+                deductTokensUseCase(cost.toInt(), "AI Mail Analysis: ${result.company ?: "Unknown"}")
+                logGeminiTokensUseCase(result.inputTokens, result.outputTokens, "Email")
             } else {
                 _uiState.value = _uiState.value.copy(
                     isAnalyzing = false,

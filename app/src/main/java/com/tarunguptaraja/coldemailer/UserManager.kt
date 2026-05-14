@@ -39,6 +39,18 @@ class UserManager @Inject constructor(
                 }
                 return true
             }
+            
+            // Migrate: Add androidId and userId if missing
+            val updates = mutableMapOf<String, Any>()
+            if (!snapshot.contains("androidId")) {
+                updates["androidId"] = androidId
+            }
+            if (!snapshot.contains("userId")) {
+                updates["userId"] = java.util.UUID.randomUUID().toString()
+            }
+            if (updates.isNotEmpty()) {
+                userDoc.update(updates).await()
+            }
 
             // Sync Profile Info (Name/Contact)
             val remoteLastUpdated = snapshot.getLong("lastUpdated") ?: 0L
@@ -53,7 +65,13 @@ class UserManager @Inject constructor(
                 val name = snapshot.getString("name") ?: ""
                 val contact = snapshot.getString("contactNumber") ?: ""
                 val tokens = snapshot.getLong("tokensRemaining") ?: 100000L
+                val lastBonusDate = snapshot.getString("lastDailyBonusDate") ?: ""
+                val userId = snapshot.getString("userId") ?: ""
+                
                 tokenManager.setTokens(tokens)
+                if (lastBonusDate.isNotEmpty()) {
+                    tokenManager.setLastDailyBonusDate(lastBonusDate)
+                }
                 
                 // Pull Roles
                 val rolesSnapshot = userDoc.collection("roles").get().await()
@@ -69,7 +87,7 @@ class UserManager @Inject constructor(
                     )
                 }
                 
-                val newLocalProfile = Profile(name, contact, roles, remoteLastUpdated)
+                val newLocalProfile = Profile(name, contact, userId, roles, remoteLastUpdated)
                 profilePreferenceManager.saveProfile(newLocalProfile)
             } else if (localProfile != null && localProfile.lastUpdated > remoteLastUpdated) {
                 // Push local to remote
@@ -90,10 +108,13 @@ class UserManager @Inject constructor(
         try {
             val userDoc = firestore.collection("Users").document(androidId)
             val data = hashMapOf(
+                "androidId" to androidId,
                 "name" to profile.name,
                 "contactNumber" to profile.contactNumber,
+                "userId" to profile.userId,
                 "tokensRemaining" to tokenManager.getRemainingTokens(),
-                "lastUpdated" to profile.lastUpdated
+                "lastUpdated" to profile.lastUpdated,
+                "lastDailyBonusDate" to tokenManager.getLastDailyBonusDate()
             )
             userDoc.set(data, com.google.firebase.firestore.SetOptions.merge()).await()
 
@@ -156,17 +177,21 @@ class UserManager @Inject constructor(
             if (!snapshot.exists()) {
                 remoteConfigManager.fetchAndActivate()
                 val awardedTokens = remoteConfigManager.getOnboardingTokens()
+                val userId = java.util.UUID.randomUUID().toString()
                 
                 val initialData = hashMapOf(
+                    "androidId" to androidId,
+                    "userId" to userId,
                     "name" to name,
                     "contactNumber" to contactNumber,
                     "tokensRemaining" to awardedTokens,
-                    "lastUpdated" to System.currentTimeMillis()
+                    "lastUpdated" to System.currentTimeMillis(),
+                    "lastDailyBonusDate" to ""
                 )
                 userDoc.set(initialData).await()
                 tokenManager.setTokens(awardedTokens)
                 
-                val profile = Profile(name, contactNumber, emptyList(), System.currentTimeMillis())
+                val profile = Profile(name, contactNumber, userId, emptyList(), System.currentTimeMillis())
                 profilePreferenceManager.saveProfile(profile)
                 
                 // Add initial transaction
@@ -200,7 +225,16 @@ class UserManager @Inject constructor(
                 "timestamp" to tx.timestamp
             )
             userDoc.collection("transactions").document(tx.id).set(txData).await()
-            userDoc.update("tokensRemaining", tokenManager.getRemainingTokens()).await()
+            val updates = mutableMapOf<String, Any?>(
+                "tokensRemaining" to tokenManager.getRemainingTokens()
+            )
+            if (tx.description == "Daily Bonus") {
+                val lastBonusDate = tokenManager.getLastDailyBonusDate()
+                if (lastBonusDate != null) {
+                    updates["lastDailyBonusDate"] = lastBonusDate
+                }
+            }
+            userDoc.update(updates).await()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -220,6 +254,7 @@ class UserManager @Inject constructor(
         val data = hashMapOf<String, Any>(
             "name" to profile.name,
             "contactNumber" to profile.contactNumber,
+            "userId" to profile.userId,
             "lastUpdated" to profile.lastUpdated
         )
         userDoc.set(data, com.google.firebase.firestore.SetOptions.merge())
@@ -246,5 +281,28 @@ class UserManager @Inject constructor(
     fun syncTokensToFirestore(tokens: Long) {
         val userDoc = firestore.collection("Users").document(androidId)
         userDoc.update("tokensRemaining", tokens)
+    }
+
+    suspend fun logGeminiTokens(transaction: com.tarunguptaraja.coldemailer.domain.model.GeminiTokenTransaction) {
+        try {
+            val userDoc = firestore.collection("Users").document(androidId)
+            
+            // Log to subcollection
+            val txData = hashMapOf(
+                "inputTokens" to transaction.inputTokens,
+                "outputTokens" to transaction.outputTokens,
+                "feature" to transaction.feature,
+                "timestamp" to transaction.timestamp
+            )
+            userDoc.collection("gemini_token_history").document(transaction.id).set(txData).await()
+            
+            // Increment counters
+            userDoc.update(
+                "used_gemini_tokens_input", com.google.firebase.firestore.FieldValue.increment(transaction.inputTokens.toLong()),
+                "used_gemini_tokens_output", com.google.firebase.firestore.FieldValue.increment(transaction.outputTokens.toLong())
+            ).await()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }
